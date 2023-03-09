@@ -46,12 +46,12 @@ namespace cyber {
 template <typename Request, typename Response>
 class Client : public ClientBase {
  public:
-  using SharedRequest = typename std::shared_ptr<Request>;
-  using SharedResponse = typename std::shared_ptr<Response>;
-  using Promise = std::promise<SharedResponse>;
-  using SharedPromise = std::shared_ptr<Promise>;
-  using SharedFuture = std::shared_future<SharedResponse>;
-  using CallbackType = std::function<void(SharedFuture)>;
+  using RequestPtr = typename std::shared_ptr<Request>;
+  using ResponsePtr = typename std::shared_ptr<Response>;
+  using Promise = std::promise<ResponsePtr>;
+  using PromisePrt = std::shared_ptr<Promise>;
+  using Future = std::shared_future<ResponsePtr>;
+  using CallbackType = std::function<void(Future)>;
 
   /**
    * @brief Construct a new Client object
@@ -86,10 +86,10 @@ class Client : public ClientBase {
    *
    * @param request shared ptr of Request type
    * @param timeout_s request timeout, if timeout, response will be empty
-   * @return SharedResponse result of this request
+   * @return ResponsePtr result of this request
    */
-  SharedResponse SendRequest(
-      SharedRequest request,
+  ResponsePtr SendRequest(
+      RequestPtr request,
       const std::chrono::seconds& timeout_s = std::chrono::seconds(5));
 
   /**
@@ -97,21 +97,21 @@ class Client : public ClientBase {
    *
    * @param request Request object
    * @param timeout_s request timeout, if timeout, response will be empty
-   * @return SharedResponse result of this request
+   * @return ResponsePtr result of this request
    */
-  SharedResponse SendRequest(
+  ResponsePtr SendRequest(
       const Request& request,
       const std::chrono::seconds& timeout_s = std::chrono::seconds(5));
 
   /**
    * @brief Send Request shared ptr asynchronously
    */
-  SharedFuture AsyncSendRequest(SharedRequest request);
+  Future AsyncSendRequest(RequestPtr request);
 
   /**
    * @brief Send Request object asynchronously
    */
-  SharedFuture AsyncSendRequest(const Request& request);
+  Future AsyncSendRequest(const Request& request);
 
   /**
    * @brief Send Request shared ptr asynchronously and invoke `cb` after we get
@@ -119,9 +119,9 @@ class Client : public ClientBase {
    *
    * @param request Request shared ptr
    * @param cb callback function after we get response
-   * @return SharedFuture a `std::future` shared ptr
+   * @return Future a `std::future` shared ptr
    */
-  SharedFuture AsyncSendRequest(SharedRequest request, CallbackType&& cb);
+  Future AsyncSendRequest(RequestPtr request, CallbackType&& cb);
 
   /**
    * @brief Is the Service is ready?
@@ -160,8 +160,7 @@ class Client : public ClientBase {
                      const transport::MessageInfo&)>
       response_callback_;
 
-  std::unordered_map<uint64_t,
-                     std::tuple<SharedPromise, CallbackType, SharedFuture>>
+  std::unordered_map<uint64_t, std::tuple<PromisePrt, CallbackType, Future>>
       pending_requests_;
   std::mutex pending_requests_mutex_;
 
@@ -221,8 +220,8 @@ bool Client<Request, Response>::Init() {
 }
 
 template <typename Request, typename Response>
-typename Client<Request, Response>::SharedResponse
-Client<Request, Response>::SendRequest(SharedRequest request,
+typename Client<Request, Response>::ResponsePtr
+Client<Request, Response>::SendRequest(RequestPtr request,
                                        const std::chrono::seconds& timeout_s) {
   if (!IsInit()) {
     return nullptr;
@@ -240,7 +239,7 @@ Client<Request, Response>::SendRequest(SharedRequest request,
 }
 
 template <typename Request, typename Response>
-typename Client<Request, Response>::SharedResponse
+typename Client<Request, Response>::ResponsePtr
 Client<Request, Response>::SendRequest(const Request& request,
                                        const std::chrono::seconds& timeout_s) {
   if (!IsInit()) {
@@ -251,32 +250,32 @@ Client<Request, Response>::SendRequest(const Request& request,
 }
 
 template <typename Request, typename Response>
-typename Client<Request, Response>::SharedFuture
+typename Client<Request, Response>::Future
 Client<Request, Response>::AsyncSendRequest(const Request& request) {
   auto request_ptr = std::make_shared<const Request>(request);
   return AsyncSendRequest(request_ptr);
 }
 
 template <typename Request, typename Response>
-typename Client<Request, Response>::SharedFuture
-Client<Request, Response>::AsyncSendRequest(SharedRequest request) {
-  return AsyncSendRequest(request, [](SharedFuture) {});
+typename Client<Request, Response>::Future
+Client<Request, Response>::AsyncSendRequest(RequestPtr request) {
+  return AsyncSendRequest(request, [](Future) {});
 }
 
 template <typename Request, typename Response>
-typename Client<Request, Response>::SharedFuture
-Client<Request, Response>::AsyncSendRequest(SharedRequest request,
+typename Client<Request, Response>::Future
+Client<Request, Response>::AsyncSendRequest(RequestPtr request,
                                             CallbackType&& cb) {
   if (IsInit()) {
     std::lock_guard<std::mutex> lock(pending_requests_mutex_);
     sequence_number_++;
     transport::MessageInfo info(writer_id_, sequence_number_, writer_id_);
     request_transmitter_->Transmit(request, info);
-    SharedPromise call_promise = std::make_shared<Promise>();
-    SharedFuture f(call_promise->get_future());
+    PromisePrt promise = std::make_shared<Promise>();
+    Future future(promise->get_future());
     pending_requests_[info.seq_num()] =
-        std::make_tuple(call_promise, std::forward<CallbackType>(cb), f);
-    return f;
+        std::make_tuple(promise, std::forward<CallbackType>(cb), future);
+    return future;
   } else {
     return std::shared_future<std::shared_ptr<Response>>();
   }
@@ -301,12 +300,12 @@ void Client<Request, Response>::HandleResponse(
     return;
   }
   auto tuple = this->pending_requests_[sequence_number];
-  auto call_promise = std::get<0>(tuple);
-  auto callback = std::get<1>(tuple);
+  auto promise = std::get<0>(tuple);
+  auto cb = std::get<1>(tuple);
   auto future = std::get<2>(tuple);
   this->pending_requests_.erase(sequence_number);
-  call_promise->set_value(response);
-  callback(future);
+  promise->set_value(response);
+  cb(future);
 }
 
 }  // namespace cyber
