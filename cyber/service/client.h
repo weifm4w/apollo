@@ -49,7 +49,7 @@ class Client : public ClientBase {
   using RequestPtr = typename std::shared_ptr<Request>;
   using ResponsePtr = typename std::shared_ptr<Response>;
   using Promise = std::promise<ResponsePtr>;
-  using PromisePrt = std::shared_ptr<Promise>;
+  using PromisePtr = std::shared_ptr<Promise>;
   using Future = std::shared_future<ResponsePtr>;
   using CallbackType = std::function<void(Future)>;
 
@@ -160,7 +160,7 @@ class Client : public ClientBase {
                      const transport::MessageInfo&)>
       response_callback_;
 
-  std::unordered_map<uint64_t, std::tuple<PromisePrt, CallbackType, Future>>
+  std::unordered_map<uint64_t, std::tuple<PromisePtr, CallbackType, Future>>
       pending_requests_;
   std::mutex pending_requests_mutex_;
 
@@ -271,7 +271,7 @@ Client<Request, Response>::AsyncSendRequest(RequestPtr request,
     sequence_number_++;
     transport::MessageInfo info(writer_id_, sequence_number_, writer_id_);
     request_transmitter_->Transmit(request, info);
-    PromisePrt promise = std::make_shared<Promise>();
+    PromisePtr promise = std::make_shared<Promise>();
     Future future(promise->get_future());
     pending_requests_[info.seq_num()] =
         std::make_tuple(promise, std::forward<CallbackType>(cb), future);
@@ -301,11 +301,11 @@ void Client<Request, Response>::HandleResponse(
   }
   auto tuple = this->pending_requests_[sequence_number];
   auto promise = std::get<0>(tuple);
-  auto cb = std::get<1>(tuple);
+  auto callback = std::get<1>(tuple);
   auto future = std::get<2>(tuple);
   this->pending_requests_.erase(sequence_number);
   promise->set_value(response);
-  cb(future);
+  callback(future);
 }
 
 }  // namespace cyber
