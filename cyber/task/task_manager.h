@@ -41,8 +41,10 @@ class TaskManager {
   auto Enqueue(F&& func, Args&&... args)
       -> std::future<typename std::result_of<F(Args...)>::type> {
     using return_type = typename std::result_of<F(Args...)>::type;
+
     auto task = std::make_shared<std::packaged_task<return_type()>>(
         std::bind(std::forward<F>(func), std::forward<Args>(args)...));
+
     if (!stop_.load()) {
       task_queue_->Enqueue([task]() { (*task)(); });
       for (auto& task : tasks_) {

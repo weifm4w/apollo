@@ -34,6 +34,7 @@ TaskManager::TaskManager()
     AERROR << "Task queue init failed";
     throw std::runtime_error("Task queue init failed");
   }
+
   auto func = [this]() {
     while (!stop_) {
       std::function<void()> task;
@@ -49,6 +50,7 @@ TaskManager::TaskManager()
   num_threads_ = scheduler::Instance()->TaskPoolSize();
   auto factory = croutine::CreateRoutineFactory(std::move(func));
   tasks_.reserve(num_threads_);
+
   for (uint32_t i = 0; i < num_threads_; i++) {
     auto task_name = task_prefix + std::to_string(i);
     tasks_.push_back(common::GlobalData::RegisterTaskName(task_name));
