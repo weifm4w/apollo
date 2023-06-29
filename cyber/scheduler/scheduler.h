@@ -88,11 +88,12 @@ class Scheduler {
   Scheduler() : stop_(false) {}
 
   AtomicRWLock id_cr_lock_;
-  AtomicHashMap<uint64_t, MutexWrapper*> id_map_mutex_;
-  std::mutex cr_wl_mtx_;
+  AtomicHashMap<uint64_t, MutexWrapper*> id_mutex_map_;
+  std::mutex id_mutex_map_mtx_;
 
-  std::unordered_map<uint64_t, std::shared_ptr<CRoutine>> id_cr_;
-  std::vector<std::shared_ptr<ProcessorContext>> pctxs_;
+  // mark: 核心
+  std::unordered_map<uint64_t, std::shared_ptr<CRoutine>> id_cr_map_;
+  std::vector<std::shared_ptr<ProcessorContext>> processor_ctxs_;
   std::vector<std::shared_ptr<Processor>> processors_;
 
   std::unordered_map<std::string, InnerThread> inner_thr_confs_;

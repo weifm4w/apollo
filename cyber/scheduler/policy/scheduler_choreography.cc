@@ -103,7 +103,7 @@ void SchedulerChoreography::CreateProcessor() {
                      choreography_affinity_, i);
     SetSchedPolicy(proc->Thread(), choreography_processor_policy_,
                    choreography_processor_prio_, proc->Tid());
-    pctxs_.emplace_back(ctx);
+    processor_ctxs_.emplace_back(ctx);
     processors_.emplace_back(proc);
   }
 
@@ -115,7 +115,7 @@ void SchedulerChoreography::CreateProcessor() {
     SetSchedAffinity(proc->Thread(), pool_cpuset_, pool_affinity_, i);
     SetSchedPolicy(proc->Thread(), pool_processor_policy_, pool_processor_prio_,
                    proc->Tid());
-    pctxs_.emplace_back(ctx);
+    processor_ctxs_.emplace_back(ctx);
     processors_.emplace_back(proc);
   }
 }
@@ -124,12 +124,12 @@ bool SchedulerChoreography::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
   // we use multi-key mutex to prevent race condition
   // when del && add cr with same crid
   MutexWrapper* wrapper = nullptr;
-  if (!id_map_mutex_.Get(cr->id(), &wrapper)) {
+  if (!id_mutex_map_.Get(cr->id(), &wrapper)) {
     {
-      std::lock_guard<std::mutex> wl_lg(cr_wl_mtx_);
-      if (!id_map_mutex_.Get(cr->id(), &wrapper)) {
+      std::lock_guard<std::mutex> wl_lg(id_mutex_map_mtx_);
+      if (!id_mutex_map_.Get(cr->id(), &wrapper)) {
         wrapper = new MutexWrapper();
-        id_map_mutex_.Set(cr->id(), wrapper);
+        id_mutex_map_.Set(cr->id(), wrapper);
       }
     }
   }
@@ -147,17 +147,17 @@ bool SchedulerChoreography::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
 
   {
     WriteLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    if (id_cr_.find(cr->id()) != id_cr_.end()) {
+    if (id_cr_map_.find(cr->id()) != id_cr_map_.end()) {
       return false;
     }
-    id_cr_[cr->id()] = cr;
+    id_cr_map_[cr->id()] = cr;
   }
 
   // Enqueue task.
   uint32_t pid = cr->processor_id();
   if (pid < proc_num_) {
     // Enqueue task to Choreo Policy.
-    static_cast<ChoreographyContext*>(pctxs_[pid].get())->Enqueue(cr);
+    static_cast<ChoreographyContext*>(processor_ctxs_[pid].get())->Enqueue(cr);
   } else {
     // Check if task prio is reasonable.
     if (cr->priority() >= MAX_PRIO) {
@@ -170,8 +170,8 @@ bool SchedulerChoreography::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
     // Enqueue task to pool runqueue.
     {
       WriteLockGuard<AtomicRWLock> lk(
-          ClassicContext::rq_locks_[DEFAULT_GROUP_NAME].at(cr->priority()));
-      ClassicContext::cr_group_[DEFAULT_GROUP_NAME]
+          ClassicContext::locks_group_[DEFAULT_GROUP_NAME].at(cr->priority()));
+      ClassicContext::croutines_group_[DEFAULT_GROUP_NAME]
           .at(cr->priority())
           .emplace_back(cr);
     }
@@ -192,12 +192,12 @@ bool SchedulerChoreography::RemoveCRoutine(uint64_t crid) {
   // we use multi-key mutex to prevent race condition
   // when del && add cr with same crid
   MutexWrapper* wrapper = nullptr;
-  if (!id_map_mutex_.Get(crid, &wrapper)) {
+  if (!id_mutex_map_.Get(crid, &wrapper)) {
     {
-      std::lock_guard<std::mutex> wl_lg(cr_wl_mtx_);
-      if (!id_map_mutex_.Get(crid, &wrapper)) {
+      std::lock_guard<std::mutex> wl_lg(id_mutex_map_mtx_);
+      if (!id_mutex_map_.Get(crid, &wrapper)) {
         wrapper = new MutexWrapper();
-        id_map_mutex_.Set(crid, wrapper);
+        id_mutex_map_.Set(crid, wrapper);
       }
     }
   }
@@ -207,12 +207,12 @@ bool SchedulerChoreography::RemoveCRoutine(uint64_t crid) {
   uint32_t pid;
   {
     WriteLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    auto p = id_cr_.find(crid);
-    if (p != id_cr_.end()) {
+    auto p = id_cr_map_.find(crid);
+    if (p != id_cr_map_.end()) {
       cr = p->second;
       pid = cr->processor_id();
-      id_cr_[crid]->Stop();
-      id_cr_.erase(crid);
+      id_cr_map_[crid]->Stop();
+      id_cr_map_.erase(crid);
     } else {
       return false;
     }
@@ -220,7 +220,7 @@ bool SchedulerChoreography::RemoveCRoutine(uint64_t crid) {
 
   // rm cr from pool if rt not in choreo context
   if (pid < proc_num_) {
-    return static_cast<ChoreographyContext*>(pctxs_[pid].get())
+    return static_cast<ChoreographyContext*>(processor_ctxs_[pid].get())
         ->RemoveCRoutine(crid);
   } else {
     return ClassicContext::RemoveCRoutine(cr);
@@ -238,8 +238,8 @@ bool SchedulerChoreography::NotifyProcessor(uint64_t crid) {
   // policies will handle ready-state CRoutines
   {
     ReadLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    auto it = id_cr_.find(crid);
-    if (it != id_cr_.end()) {
+    auto it = id_cr_map_.find(crid);
+    if (it != id_cr_map_.end()) {
       cr = it->second;
       pid = cr->processor_id();
       if (cr->state() == RoutineState::DATA_WAIT ||
@@ -252,7 +252,7 @@ bool SchedulerChoreography::NotifyProcessor(uint64_t crid) {
   }
 
   if (pid < proc_num_) {
-    static_cast<ChoreographyContext*>(pctxs_[pid].get())->Notify();
+    static_cast<ChoreographyContext*>(processor_ctxs_[pid].get())->Notify();
   } else {
     ClassicContext::Notify(cr->group_name());
   }

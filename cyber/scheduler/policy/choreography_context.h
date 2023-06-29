@@ -46,8 +46,8 @@ class ChoreographyContext : public ProcessorContext {
   void Shutdown() override;
 
  private:
-  std::mutex mtx_wq_;
-  std::condition_variable cv_wq_;
+  std::mutex mutex_group_;
+  std::condition_variable cv_group_;
   int notify = 0;
 
   AtomicRWLock rq_lk_;

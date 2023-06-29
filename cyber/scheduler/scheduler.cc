@@ -39,6 +39,7 @@ bool Scheduler::CreateTask(const RoutineFactory& factory,
   return CreateTask(factory.create_routine(), name, factory.GetDataVisitor());
 }
 
+// mark: 创建 CRoutine,
 bool Scheduler::CreateTask(std::function<void()>&& func,
                            const std::string& name,
                            std::shared_ptr<DataVisitorBase> visitor) {
@@ -47,13 +48,16 @@ bool Scheduler::CreateTask(std::function<void()>&& func,
     return false;
   }
 
+  // mark: 统一线程ID
   auto task_id = GlobalData::RegisterTaskName(name);
 
+  // mark: 封装成 CRoutine
   auto cr = std::make_shared<CRoutine>(func);
   cr->set_id(task_id);
   cr->set_name(name);
   AINFO << "create croutine: " << name;
 
+  // mark: 注册 CRoutine
   if (!DispatchTask(cr)) {
     return false;
   }
@@ -63,6 +67,7 @@ bool Scheduler::CreateTask(std::function<void()>&& func,
       if (cyber_unlikely(stop_.load())) {
         return;
       }
+      // mark: 观察到新消息, 通知唤醒线程去处理
       this->NotifyProcessor(task_id);
     });
   }
@@ -127,14 +132,14 @@ void Scheduler::Shutdown() {
     return;
   }
 
-  for (auto& ctx : pctxs_) {
+  for (auto& ctx : processor_ctxs_) {
     ctx->Shutdown();
   }
 
   std::vector<uint64_t> cr_list;
   {
     ReadLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    for (auto& cr : id_cr_) {
+    for (auto& cr : id_cr_map_) {
       cr_list.emplace_back(cr.second->id());
     }
   }
@@ -148,7 +153,7 @@ void Scheduler::Shutdown() {
   }
 
   processors_.clear();
-  pctxs_.clear();
+  processor_ctxs_.clear();
 }
 }  // namespace scheduler
 }  // namespace cyber

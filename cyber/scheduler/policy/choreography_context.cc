@@ -59,15 +59,15 @@ bool ChoreographyContext::Enqueue(const std::shared_ptr<CRoutine>& cr) {
 }
 
 void ChoreographyContext::Notify() {
-  mtx_wq_.lock();
+  mutex_group_.lock();
   notify++;
-  mtx_wq_.unlock();
-  cv_wq_.notify_one();
+  mutex_group_.unlock();
+  cv_group_.notify_one();
 }
 
 void ChoreographyContext::Wait() {
-  std::unique_lock<std::mutex> lk(mtx_wq_);
-  cv_wq_.wait_for(lk, std::chrono::milliseconds(1000),
+  std::unique_lock<std::mutex> lk(mutex_group_);
+  cv_group_.wait_for(lk, std::chrono::milliseconds(1000),
                   [&]() { return notify > 0; });
   if (notify > 0) {
     notify--;
@@ -76,10 +76,10 @@ void ChoreographyContext::Wait() {
 
 void ChoreographyContext::Shutdown() {
   stop_.store(true);
-  mtx_wq_.lock();
+  mutex_group_.lock();
   notify = std::numeric_limits<unsigned char>::max();
-  mtx_wq_.unlock();
-  cv_wq_.notify_all();
+  mutex_group_.unlock();
+  cv_group_.notify_all();
 }
 
 bool ChoreographyContext::RemoveCRoutine(uint64_t crid) {

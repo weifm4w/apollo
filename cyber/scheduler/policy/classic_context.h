@@ -39,15 +39,23 @@ static constexpr uint32_t MAX_PRIO = 20;
 
 #define DEFAULT_GROUP_NAME "default_grp"
 
-using CROUTINE_QUEUE = std::vector<std::shared_ptr<CRoutine>>;
-using MULTI_PRIO_QUEUE = std::array<CROUTINE_QUEUE, MAX_PRIO>;
-using CR_GROUP = std::unordered_map<std::string, MULTI_PRIO_QUEUE>;
-using LOCK_QUEUE = std::array<base::AtomicRWLock, MAX_PRIO>;
-using RQ_LOCK_GROUP = std::unordered_map<std::string, LOCK_QUEUE>;
+// mark: 管理 CRoutine 上下文, 根据 CRoutine 的 group_name 和 priority 设计
+//       CroutineContextManager 命名更贴切
 
-using GRP_WQ_MUTEX = std::unordered_map<std::string, MutexWrapper>;
-using GRP_WQ_CV = std::unordered_map<std::string, CvWrapper>;
-using NOTIFY_GRP = std::unordered_map<std::string, int>;
+// mark: 协程数组
+using CroutineQueue = std::vector<std::shared_ptr<CRoutine>>;
+// mark: 数组下标代表 priority
+using PriorityCroutineQueue = std::array<CroutineQueue, MAX_PRIO>;
+// mark: 不同用途的协程组, key:group_name
+using CroutinesGroup = std::unordered_map<std::string, PriorityCroutineQueue>;
+
+using LockQueue = std::array<base::AtomicRWLock, MAX_PRIO>;
+using LockQueueGroup = std::unordered_map<std::string, LockQueue>;
+
+using CvGroup = std::unordered_map<std::string, CvWrapper>;
+using MutexGroup = std::unordered_map<std::string, MutexWrapper>;
+// mark: Notify()时计数器+1, Wait()唤醒时计数器-1
+using NotifyGroup = std::unordered_map<std::string, int>;  // mark: int:counter
 
 class ClassicContext : public ProcessorContext {
  public:
@@ -61,11 +69,13 @@ class ClassicContext : public ProcessorContext {
   static void Notify(const std::string &group_name);
   static bool RemoveCRoutine(const std::shared_ptr<CRoutine> &cr);
 
-  alignas(CACHELINE_SIZE) static CR_GROUP cr_group_;
-  alignas(CACHELINE_SIZE) static RQ_LOCK_GROUP rq_locks_;
-  alignas(CACHELINE_SIZE) static GRP_WQ_CV cv_wq_;
-  alignas(CACHELINE_SIZE) static GRP_WQ_MUTEX mtx_wq_;
-  alignas(CACHELINE_SIZE) static NOTIFY_GRP notify_grp_;
+  // mark: 关键管理 croutines_group_
+  alignas(CACHELINE_SIZE) static CroutinesGroup croutines_group_;
+  alignas(CACHELINE_SIZE) static LockQueueGroup locks_group_;
+
+  alignas(CACHELINE_SIZE) static CvGroup cv_group_;
+  alignas(CACHELINE_SIZE) static MutexGroup mutex_group_;
+  alignas(CACHELINE_SIZE) static NotifyGroup notify_group_;
 
  private:
   void InitGroup(const std::string &group_name);
@@ -73,12 +83,13 @@ class ClassicContext : public ProcessorContext {
   std::chrono::steady_clock::time_point wake_time_;
   bool need_sleep_ = false;
 
-  MULTI_PRIO_QUEUE *multi_pri_rq_ = nullptr;
-  LOCK_QUEUE *lq_ = nullptr;
-  MutexWrapper *mtx_wrapper_ = nullptr;
-  CvWrapper *cw_ = nullptr;
+  PriorityCroutineQueue *priority_croutines_ = nullptr;
+  LockQueue *lock_queue_ = nullptr;  // mark: 保护 priority_croutines_
 
-  std::string current_grp;
+  MutexWrapper *mtx_wrapper_ = nullptr;  // mark: 同步 notify_group_
+  CvWrapper *cv_wrapper_ = nullptr;      // mark: 同步 notify_group_
+
+  std::string current_group_;
 };
 
 }  // namespace scheduler

@@ -46,6 +46,7 @@ std::atomic<Scheduler*> instance = {nullptr};
 std::mutex mutex;
 }  // namespace
 
+// mark: 调用方式 scheduler::Instance()
 Scheduler* Instance() {
   Scheduler* obj = instance.load(std::memory_order_acquire);
   if (obj == nullptr) {
@@ -63,13 +64,14 @@ Scheduler* Instance() {
         AWARN << "Scheduler conf named " << cfg_file
               << " not found, use default.";
       }
+      // mark: new ctor中 创建线程 并 配置调度策略
       if (!policy.compare("classic")) {
         obj = new SchedulerClassic();
       } else if (!policy.compare("choreography")) {
         obj = new SchedulerChoreography();
       } else {
         AWARN << "Invalid scheduler policy: " << policy;
-        obj = new SchedulerClassic();
+        obj = new SchedulerClassic(); // mark: 默认调度策略
       }
       instance.store(obj, std::memory_order_release);
     }

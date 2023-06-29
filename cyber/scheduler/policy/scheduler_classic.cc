@@ -78,6 +78,7 @@ SchedulerClassic::SchedulerClassic() {
     sched_group->set_processor_num(proc_num);
   }
 
+  // mark: 创建线程和配置调度策略
   CreateProcessor();
 }
 
@@ -97,10 +98,13 @@ void SchedulerClassic::CreateProcessor() {
 
     for (uint32_t i = 0; i < proc_num; i++) {
       auto ctx = std::make_shared<ClassicContext>(group_name);
-      pctxs_.emplace_back(ctx);
+      processor_ctxs_.emplace_back(ctx);
 
+      // mark: Processor 代码cpu核, 绑定 Croutine 的同时, 创建线程
       auto proc = std::make_shared<Processor>();
-      proc->BindContext(ctx);
+      proc->BindContext(ctx);  // mark: note 创建线程
+
+      // mark: 配置线程cpu亲和性与调度策略
       SetSchedAffinity(proc->Thread(), cpuset, affinity, i);
       SetSchedPolicy(proc->Thread(), processor_policy, processor_prio,
                      proc->Tid());
@@ -113,12 +117,12 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
   // we use multi-key mutex to prevent race condition
   // when del && add cr with same crid
   MutexWrapper* wrapper = nullptr;
-  if (!id_map_mutex_.Get(cr->id(), &wrapper)) {
+  if (!id_mutex_map_.Get(cr->id(), &wrapper)) {
     {
-      std::lock_guard<std::mutex> wl_lg(cr_wl_mtx_);
-      if (!id_map_mutex_.Get(cr->id(), &wrapper)) {
+      std::lock_guard<std::mutex> wl_lg(id_mutex_map_mtx_);
+      if (!id_mutex_map_.Get(cr->id(), &wrapper)) {
         wrapper = new MutexWrapper();
-        id_map_mutex_.Set(cr->id(), wrapper);
+        id_mutex_map_.Set(cr->id(), wrapper);
       }
     }
   }
@@ -126,10 +130,11 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
 
   {
     WriteLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    if (id_cr_.find(cr->id()) != id_cr_.end()) {
+    if (id_cr_map_.find(cr->id()) != id_cr_map_.end()) {
       return false;
     }
-    id_cr_[cr->id()] = cr;
+    // mark: 注册 Croutine
+    id_cr_map_[cr->id()] = cr;
   }
 
   if (cr_confs_.find(cr->name()) != cr_confs_.end()) {
@@ -150,12 +155,14 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
   // Enqueue task.
   {
     WriteLockGuard<AtomicRWLock> lk(
-        ClassicContext::rq_locks_[cr->group_name()].at(cr->priority()));
-    ClassicContext::cr_group_[cr->group_name()]
+        ClassicContext::locks_group_[cr->group_name()].at(cr->priority()));
+    // mark: 根据 group_name 和 priority 插入 Croutine
+    ClassicContext::croutines_group_[cr->group_name()]
         .at(cr->priority())
         .emplace_back(cr);
   }
 
+  // mark: 有新 Croutine 插入, 通知唤醒
   ClassicContext::Notify(cr->group_name());
   return true;
 }
@@ -167,8 +174,8 @@ bool SchedulerClassic::NotifyProcessor(uint64_t crid) {
 
   {
     ReadLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    if (id_cr_.find(crid) != id_cr_.end()) {
-      auto cr = id_cr_[crid];
+    if (id_cr_map_.find(crid) != id_cr_map_.end()) {
+      auto cr = id_cr_map_[crid];
       if (cr->state() == RoutineState::DATA_WAIT ||
           cr->state() == RoutineState::IO_WAIT) {
         cr->SetUpdateFlag();
@@ -194,12 +201,12 @@ bool SchedulerClassic::RemoveCRoutine(uint64_t crid) {
   // we use multi-key mutex to prevent race condition
   // when del && add cr with same crid
   MutexWrapper* wrapper = nullptr;
-  if (!id_map_mutex_.Get(crid, &wrapper)) {
+  if (!id_mutex_map_.Get(crid, &wrapper)) {
     {
-      std::lock_guard<std::mutex> wl_lg(cr_wl_mtx_);
-      if (!id_map_mutex_.Get(crid, &wrapper)) {
+      std::lock_guard<std::mutex> wl_lg(id_mutex_map_mtx_);
+      if (!id_mutex_map_.Get(crid, &wrapper)) {
         wrapper = new MutexWrapper();
-        id_map_mutex_.Set(crid, wrapper);
+        id_mutex_map_.Set(crid, wrapper);
       }
     }
   }
@@ -208,10 +215,10 @@ bool SchedulerClassic::RemoveCRoutine(uint64_t crid) {
   std::shared_ptr<CRoutine> cr = nullptr;
   {
     WriteLockGuard<AtomicRWLock> lk(id_cr_lock_);
-    if (id_cr_.find(crid) != id_cr_.end()) {
-      cr = id_cr_[crid];
-      id_cr_[crid]->Stop();
-      id_cr_.erase(crid);
+    if (id_cr_map_.find(crid) != id_cr_map_.end()) {
+      cr = id_cr_map_[crid];
+      id_cr_map_[crid]->Stop();
+      id_cr_map_.erase(crid);
     } else {
       return false;
     }

@@ -57,7 +57,7 @@ void SetSchedAffinity(std::thread* thread, const std::vector<int>& cpus,
   if (cpus.size()) {
     if (!affinity.compare("range")) {
       for (const auto cpu : cpus) {
-        CPU_SET(cpu, &set);
+        CPU_SET(cpu, &set);  // mark: 绑到多个核
       }
       pthread_setaffinity_np(thread->native_handle(), sizeof(set), &set);
       AINFO << "thread " << thread->get_id() << " set range affinity";
@@ -65,7 +65,7 @@ void SetSchedAffinity(std::thread* thread, const std::vector<int>& cpus,
       if (cpu_id == -1 || (uint32_t)cpu_id >= cpus.size()) {
         return;
       }
-      CPU_SET(cpus[cpu_id], &set);
+      CPU_SET(cpus[cpu_id], &set);  // mark: 绑到指定核,一对一
       pthread_setaffinity_np(thread->native_handle(), sizeof(set), &set);
       AINFO << "thread " << thread->get_id() << " set 1to1 affinity";
     }

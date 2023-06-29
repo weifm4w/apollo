@@ -60,7 +60,7 @@ TEST(SchedulerChoreoTest, sched_choreo) {
   EXPECT_TRUE(sched->DispatchTask(cr1));
 
   auto& croutines =
-      ClassicContext::cr_group_[DEFAULT_GROUP_NAME].at(cr->priority());
+      ClassicContext::croutines_group_[DEFAULT_GROUP_NAME].at(cr->priority());
   std::vector<std::string> cr_names;
   for (auto& croutine : croutines) {
     cr_names.emplace_back(croutine->name());
@@ -72,7 +72,7 @@ TEST(SchedulerChoreoTest, sched_choreo) {
   EXPECT_EQ(itr, cr_names.end());
 
   sched->RemoveTask(cr->name());
-  croutines = ClassicContext::cr_group_[DEFAULT_GROUP_NAME].at(cr->priority());
+  croutines = ClassicContext::croutines_group_[DEFAULT_GROUP_NAME].at(cr->priority());
   cr_names.clear();
   for (auto& croutine : croutines) {
     cr_names.emplace_back(croutine->name());
