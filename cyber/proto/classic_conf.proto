@@ -4,20 +4,33 @@ package apollo.cyber.proto;
 
 message ClassicTask {
   optional string name = 1;
-  optional uint32 prio = 2 [default = 1];
+  optional uint32 prio = 2 [default = 1]; // 值越大, 表明优先级越高
   optional string group_name = 3;
 }
 
 message SchedGroup {
   required string name = 1 [default = "default_grp"];
   optional uint32 processor_num = 2;
+  // mark: range: 每个线程都可以在cpuset:0-7, 16-23号核上执行
+  //       1to1:  每个线程和一个cpu进行亲和性设置
   optional string affinity = 3;
   optional string cpuset = 4;
+  // mark: SCHED_FIFO(实时调度策略, 先到先服务),
+  //       SCHED_RR(实时调度策略, 时间片轮转),
+  //       SCHED_OTHER(分时调度策略, 为默认策略)
   optional string processor_policy = 5;
+  /* mark: 1.如果 processor_policy 设置为 SCHED_FIFO/SCHED_RR,
+             processor_prio取值为(1-99), 值越大, 表明优先级越高, 抢到cpu概率越大。
+           2.如果 processor_policy 设置为 SCHED_OTHER,
+             processor_prio 取值为（-20-19, 0为默认值）, 这里为 nice 值,
+             nice 值不影响分配到cpu的优先级, 但是影响分到cpu时间片的大小,
+             如果 nice 值越小, 分到的时间片越多 */
   optional int32 processor_prio = 6 [default = 0];
+  // mark: Croutine 数组
   repeated ClassicTask tasks = 7;
 }
 
 message ClassicConf {
+  // mark: 多个group对应多个numa节点, 跨numa节点会给系统带来额外的开销
   repeated SchedGroup groups = 1;
 }

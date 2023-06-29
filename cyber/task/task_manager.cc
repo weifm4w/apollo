@@ -35,6 +35,7 @@ TaskManager::TaskManager()
     throw std::runtime_error("Task queue init failed");
   }
 
+  // mark: 线程处理模板, 循环处理 Enqueue 的任务, 任务是协程化
   auto func = [this]() {
     while (!stop_) {
       std::function<void()> task;
@@ -47,10 +48,12 @@ TaskManager::TaskManager()
     }
   };
 
+  // mark: 工厂方法, 创建通用任务(线程)处理模板 func, user只需 Enqueue 任务即可, 任务会在线程池中运行
   num_threads_ = scheduler::Instance()->TaskPoolSize();
   auto factory = croutine::CreateRoutineFactory(std::move(func));
   tasks_.reserve(num_threads_);
 
+  // mark: tasks_ 只做线程统一ID标记,具体在scheduler中做线程管理
   for (uint32_t i = 0; i < num_threads_; i++) {
     auto task_name = task_prefix + std::to_string(i);
     tasks_.push_back(common::GlobalData::RegisterTaskName(task_name));

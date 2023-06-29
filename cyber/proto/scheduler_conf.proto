@@ -9,14 +9,14 @@ message InnerThread {
   optional string name = 1;
   optional string cpuset = 2;
   optional string policy = 3;
-  optional uint32 prio = 4 [default = 1];
+  optional uint32 prio = 4 [default = 1]; // 值越大, 表明优先级越高
 }
 
 message SchedulerConf {
   optional string policy = 1;
   optional uint32 routine_num = 2;
   optional uint32 default_proc_num = 3;
-  optional string process_level_cpuset = 4;
+  optional string process_level_cpuset = 4; // mark: 控制mainboard进程使用哪些cpu
   repeated InnerThread threads = 5;
   optional ClassicConf classic_conf = 6;
   optional ChoreographyConf choreography_conf = 7;

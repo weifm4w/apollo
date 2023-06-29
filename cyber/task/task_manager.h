@@ -47,6 +47,7 @@ class TaskManager {
 
     if (!stop_.load()) {
       task_queue_->Enqueue([task]() { (*task)(); });
+      // mark: 唤醒 tasks_ 线程池
       for (auto& task : tasks_) {
         scheduler::Instance()->NotifyTask(task);
       }
@@ -59,7 +60,9 @@ class TaskManager {
   uint32_t num_threads_ = 0;
   uint32_t task_queue_size_ = 1000;
   std::atomic<bool> stop_ = {false};
+  // mark: 任务线程池,ID统一管理: num_threads_ = scheduler::Instance()->TaskPoolSize()
   std::vector<uint64_t> tasks_;
+  // mark: 任务池, 在tasks_线程池中运行
   std::shared_ptr<base::BoundedQueue<std::function<void()>>> task_queue_;
   DECLARE_SINGLETON(TaskManager);
 };

@@ -101,6 +101,7 @@ bool Init(const char* binary_name) {
 
   InitLogger(binary_name);
   auto thread = const_cast<std::thread*>(async_logger->LogThread());
+  // mark: Instance 时已经根据配置创建好线程并设置调度策略
   scheduler::Instance()->SetInnerThreadAttr("async_log", thread);
   SysMo::Instance();
   std::signal(SIGINT, OnShutdown);

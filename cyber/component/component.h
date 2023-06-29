@@ -439,13 +439,14 @@ bool Component<M0, M1, M2, M3>::Process(const std::shared_ptr<M0>& msg0,
 template <typename M0, typename M1, typename M2, typename M3>
 bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  LoadConfigFiles(config);
+  LoadConfigFiles(config);  // mark: 加载 .pb.txt & gflag 配置
 
   if (config.readers_size() < 4) {
     AERROR << "Invalid config file: too few readers_." << std::endl;
     return false;
   }
 
+  // mark: 回调用户的初始化
   if (!Init()) {
     AERROR << "Component Init() failed." << std::endl;
     return false;
@@ -453,6 +454,7 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
 
   bool is_reality_mode = GlobalData::Instance()->IsRealityMode();
 
+  // mark: 解析配置并创建 readers
   ReaderConfig reader_cfg;
   reader_cfg.channel_name = config.readers(1).channel();
   reader_cfg.qos_profile.CopyFrom(config.readers(1).qos_profile());
@@ -478,8 +480,10 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
 
   std::shared_ptr<Reader<M0>> reader0 = nullptr;
   if (cyber_likely(is_reality_mode)) {
+    // mark: 真实环境
     reader0 = node_->template CreateReader<M0>(reader_cfg);
   } else {
+    // mark: 仿真环境
     std::weak_ptr<Component<M0, M1, M2, M3>> self =
         std::dynamic_pointer_cast<Component<M0, M1, M2, M3>>(
             shared_from_this());
@@ -522,16 +526,19 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
 
   if (cyber_unlikely(!is_reality_mode)) {
     return true;
+    // mark: 仿真环境到此结束
   }
 
   auto sched = scheduler::Instance();
   std::weak_ptr<Component<M0, M1, M2, M3>> self =
       std::dynamic_pointer_cast<Component<M0, M1, M2, M3>>(shared_from_this());
+  // mark: 封装一个 function 给到 RoutineFactory 工厂方法处理模板
   auto func =
       [self](const std::shared_ptr<M0>& msg0, const std::shared_ptr<M1>& msg1,
              const std::shared_ptr<M2>& msg2, const std::shared_ptr<M3>& msg3) {
         auto ptr = self.lock();
         if (ptr) {
+          // mark: 用户消息回调
           ptr->Process(msg0, msg1, msg2, msg3);
         } else {
           AERROR << "Component object has been destroyed." << std::endl;
@@ -543,8 +550,11 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
     config_list.emplace_back(reader->ChannelId(), reader->PendingQueueSize());
   }
   auto dv = std::make_shared<data::DataVisitor<M0, M1, M2, M3>>(config_list);
+  // mark: CRoutine 工厂方法
   croutine::RoutineFactory factory =
       croutine::CreateRoutineFactory<M0, M1, M2, M3>(func, dv);
+
+  // mark: 创建 Croutine 到
   return sched->CreateTask(factory, node_->Name());
 }
 

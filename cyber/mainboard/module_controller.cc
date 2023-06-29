@@ -39,6 +39,7 @@ bool ModuleController::LoadAll() {
   const std::string current_path = common::GetCurrentPath();
   const std::string dag_root_path = common::GetAbsolutePath(work_root, "dag");
   std::vector<std::string> paths;
+  // mark: 解析 dag 配置
   for (auto& dag_conf : args_.GetDAGConfList()) {
     std::string module_path = "";
     if (dag_conf == common::GetFileName(dag_conf)) {
@@ -61,6 +62,7 @@ bool ModuleController::LoadAll() {
     total_component_nums += scheduler::Instance()->TaskPoolSize();
   }
   common::GlobalData::Instance()->SetComponentNums(total_component_nums);
+  // mark: 加载 module 共享库, 并创建和初始化 components
   for (auto module_path : paths) {
     AINFO << "Start initialize dag: " << module_path;
     if (!LoadModule(module_path)) {
@@ -88,18 +90,22 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
       return false;
     }
 
+    // mark: 加载 module 共享库
     class_loader_manager_.LoadLibrary(load_path);
 
+    // mark: 通用 components 创建和初始化
     for (auto& component : module_config.components()) {
       const std::string& class_name = component.class_name();
       std::shared_ptr<ComponentBase> base =
           class_loader_manager_.CreateClassObj<ComponentBase>(class_name);
+      // mark: 初始化
       if (base == nullptr || !base->Initialize(component.config())) {
         return false;
       }
       component_list_.emplace_back(std::move(base));
     }
 
+    // mark: 定时器 timer_components 创建和初始化
     for (auto& component : module_config.timer_components()) {
       const std::string& class_name = component.class_name();
       std::shared_ptr<ComponentBase> base =

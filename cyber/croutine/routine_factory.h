@@ -35,7 +35,7 @@ class RoutineFactory {
   using VoidFunc = std::function<void()>;
   using CreateRoutineFunc = std::function<VoidFunc()>;
   // We can use routine_func directly.
-  CreateRoutineFunc create_routine;
+  CreateRoutineFunc create_routine;  // mark: 回调函数
   inline std::shared_ptr<data::DataVisitorBase> GetDataVisitor() const {
     return data_visitor_;
   }
@@ -130,6 +130,7 @@ RoutineFactory CreateRoutineFactory(
       for (;;) {
         CRoutine::GetCurrentRoutine()->set_state(RoutineState::DATA_WAIT);
         if (dv->TryFetch(msg0, msg1, msg2, msg3)) {
+          // mark: 回调注册函数 f
           f(msg0, msg1, msg2, msg3);
           CRoutine::Yield(RoutineState::READY);
         } else {
