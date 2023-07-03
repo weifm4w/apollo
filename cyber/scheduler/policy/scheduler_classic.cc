@@ -78,11 +78,12 @@ SchedulerClassic::SchedulerClassic() {
     sched_group->set_processor_num(proc_num);
   }
 
-  // mark: 创建线程和配置调度策略
+  // MARK: 创建线程和配置调度策略
   CreateProcessor();
 }
 
 void SchedulerClassic::CreateProcessor() {
+  // MARK: 1. groups 有多个调度组
   for (auto& group : classic_conf_.groups()) {
     auto& group_name = group.name();
     auto proc_num = group.processor_num();
@@ -96,12 +97,15 @@ void SchedulerClassic::CreateProcessor() {
     std::vector<int> cpuset;
     ParseCpuset(group.cpuset(), &cpuset);
 
+    // MARK: 2. 一个调度组内有多个线程,一个线程管理一个协程组 ProcessorContext
     for (uint32_t i = 0; i < proc_num; i++) {
+      // mark: 协程组管理上下文, 根据 CRoutine 的 group_name 和 priority 设计
       auto ctx = std::make_shared<ClassicContext>(group_name);
       processor_ctxs_.emplace_back(ctx);
 
       // mark: Processor 代码cpu核, 绑定 Croutine 的同时, 创建线程
       auto proc = std::make_shared<Processor>();
+      // MARK: 3. 一个线程绑定一个 ProcessorContext 协程组管理上下文
       proc->BindContext(ctx);  // mark: note 创建线程
 
       // mark: 配置线程cpu亲和性与调度策略

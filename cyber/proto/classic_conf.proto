@@ -10,6 +10,8 @@ message ClassicTask {
 
 message SchedGroup {
   required string name = 1 [default = "default_grp"];
+  // mark: 核数,一核一线程,
+  //       SchedulerClassic() => CreateProcessor() => BindContext(ctx) => std::thread
   optional uint32 processor_num = 2;
   // mark: range: 每个线程都可以在cpuset:0-7, 16-23号核上执行
   //       1to1:  每个线程和一个cpu进行亲和性设置

@@ -44,6 +44,7 @@ void Processor::Run() {
 
   while (cyber_likely(running_.load())) {
     if (cyber_likely(context_ != nullptr)) {
+      // mark: 不停的消费协程任务
       auto croutine = context_->NextRoutine();
       if (croutine) {
         snap_shot_->execute_start_time.store(cyber::Time::Now().ToNanosecond());
@@ -78,6 +79,7 @@ void Processor::Stop() {
 
 void Processor::BindContext(const std::shared_ptr<ProcessorContext>& context) {
   context_ = context;
+  // mark: 创建线程
   std::call_once(thread_flag_,
                  [this]() { thread_ = std::thread(&Processor::Run, this); });
 }

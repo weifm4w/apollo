@@ -37,12 +37,13 @@ std::once_flag pool_init_flag;
 
 void CRoutineEntry(void *arg) {
   CRoutine *r = static_cast<CRoutine *>(arg);
-  r->Run();
+  r->Run();  // mark: 真正的协程回调,在协程被调度时运行
   CRoutine::Yield(RoutineState::FINISHED);
 }
 }  // namespace
 
 CRoutine::CRoutine(const std::function<void()> &func) : func_(func) {
+  // mark: 提前创建 RoutineContext 协程上下文对象池
   std::call_once(pool_init_flag, [&]() {
     uint32_t routine_num = common::GlobalData::Instance()->ComponentNums();
     auto &global_conf = common::GlobalData::Instance()->Config();
@@ -61,6 +62,7 @@ CRoutine::CRoutine(const std::function<void()> &func) : func_(func) {
     context_.reset(new RoutineContext());
   }
 
+  // mark: 创建协程上下文 RoutineContext, 保存了协程回调函数 CRoutineEntry
   MakeContext(CRoutineEntry, this, context_.get());
   state_ = RoutineState::READY;
   updated_.test_and_set(std::memory_order_release);
@@ -80,6 +82,7 @@ RoutineState CRoutine::Resume() {
   }
 
   current_routine_ = this;
+  // mark: 让线程上下文切换到本协程上下文运行,即唤醒本协程运行
   SwapContext(GetMainStack(), GetStack());
   current_routine_ = nullptr;
   return state_;
