@@ -25,9 +25,9 @@ namespace croutine {
 //              +------------------+
 //              |      Reserved    |
 //              +------------------+
-//              |  Return Address  |   f1
+//              |  Return Address  |   f1 -> void CRoutineEntry(void *arg)
 //              +------------------+
-//              |        RDI       |   arg
+//              |        RDI       |   arg: this -> CRoutine obj
 //              +------------------+
 //              |        R12       |
 //              +------------------+
@@ -37,6 +37,8 @@ namespace croutine {
 //              +------------------+
 // ctx->sp  =>  |        RBP       |
 //              +------------------+
+// mark: 把函数地址 f1 和函数参数 arg 保存到协程上下文 ctx
+//       https://blog.csdn.net/jinzhuojun/article/details/86760743
 void MakeContext(const func &f1, const void *arg, RoutineContext *ctx) {
   ctx->sp = ctx->stack + STACK_SIZE - 2 * sizeof(void *) - REGISTERS_SIZE;
   std::memset(ctx->sp, 0, REGISTERS_SIZE);
@@ -45,8 +47,10 @@ void MakeContext(const func &f1, const void *arg, RoutineContext *ctx) {
 #else
   char *sp = ctx->stack + STACK_SIZE - 2 * sizeof(void *);
 #endif
+  // mark: ctx 保存 f1 函数地址
   *reinterpret_cast<void **>(sp) = reinterpret_cast<void *>(f1);
   sp -= sizeof(void *);
+  // mark: ctx 保存 f1 函数入参
   *reinterpret_cast<void **>(sp) = const_cast<void *>(arg);
 }
 

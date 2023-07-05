@@ -31,6 +31,7 @@ namespace apollo {
 namespace cyber {
 namespace croutine {
 
+// mark: 2MB过大
 constexpr size_t STACK_SIZE = 2 * 1024 * 1024;
 #if defined __aarch64__
 constexpr size_t REGISTERS_SIZE = 160;
@@ -50,6 +51,7 @@ struct RoutineContext {
 
 void MakeContext(const func& f1, const void* arg, RoutineContext* ctx);
 
+// mark: https://posts.careerengine.us/p/62aed9dde3363408e32189de
 inline void SwapContext(char** src_sp, char** dest_sp) {
   ctx_swap(reinterpret_cast<void**>(src_sp), reinterpret_cast<void**>(dest_sp));
 }

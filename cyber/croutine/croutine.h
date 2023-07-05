@@ -102,10 +102,10 @@ class CRoutine {
   std::chrono::steady_clock::time_point wake_time_ =
       std::chrono::steady_clock::now();
 
-  RoutineFunc func_;
+  RoutineFunc func_;  // mark: 协程函数
   RoutineState state_;
 
-  std::shared_ptr<RoutineContext> context_;
+  std::shared_ptr<RoutineContext> context_;  // mark: 协程上下文
 
   std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
   std::atomic_flag updated_ = ATOMIC_FLAG_INIT;
@@ -118,16 +118,21 @@ class CRoutine {
 
   std::string group_name_;
 
+  // mark: 线程变量, 指向当前线程正在执行的协程对应的CRoutine对象
   static thread_local CRoutine *current_routine_;
+  // mark: 线程变量, 保存主执行体的栈, 也就是系统栈
   static thread_local char *main_stack_;
 };
 
+// mark:
+// Yield()负责把当前寄存器中的信息即协程执行上下文保存至context_中，然后把main_stack_中线程主体的上下文恢复到寄存器中，将控制权返回给主体调度线程
 inline void CRoutine::Yield(const RoutineState &state) {
   auto routine = GetCurrentRoutine();
   routine->set_state(state);
-  SwapContext(GetCurrentRoutine()->GetStack(), GetMainStack());
+  SwapContext(routine->GetStack(), GetMainStack());
 }
 
+// mark: 挂起当前协程
 inline void CRoutine::Yield() {
   SwapContext(GetCurrentRoutine()->GetStack(), GetMainStack());
 }
