@@ -15,7 +15,7 @@ message InnerThread {
 message SchedulerConf {
   optional string policy = 1;
   optional uint32 routine_num = 2;
-  optional uint32 default_proc_num = 3;
+  optional uint32 default_proc_num = 3; // mark: 决定了 TaskManager 启动多少线程数去处理协程池 task_pool_size_
   optional string process_level_cpuset = 4; // mark: 控制mainboard进程使用哪些cpu
   repeated InnerThread threads = 5;
   optional ClassicConf classic_conf = 6;

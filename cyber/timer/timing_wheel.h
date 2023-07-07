@@ -33,11 +33,13 @@ namespace cyber {
 
 struct TimerTask;
 
-static const uint64_t WORK_WHEEL_SIZE = 512;
-static const uint64_t ASSISTANT_WHEEL_SIZE = 64;
-static const uint64_t TIMER_RESOLUTION_MS = 2;
+static const uint64_t WORK_WHEEL_SIZE = 512;      // mark: 内圈大小
+static const uint64_t ASSISTANT_WHEEL_SIZE = 64;  // mark: 外圈大小
+static const uint64_t TIMER_RESOLUTION_MS = 2;  // mark: 内圈index时间精度
 static const uint64_t TIMER_MAX_INTERVAL_MS =
     WORK_WHEEL_SIZE * ASSISTANT_WHEEL_SIZE * TIMER_RESOLUTION_MS;
+
+// mark: https://zhuanlan.zhihu.com/p/115990699
 
 class TimingWheel {
  public:
@@ -73,10 +75,10 @@ class TimingWheel {
   }
 
   bool running_ = false;
-  uint64_t tick_count_ = 0;
+  uint64_t tick_count_ = 0;  // 内圈index指针
   std::mutex running_mutex_;
-  TimerBucket work_wheel_[WORK_WHEEL_SIZE];
-  TimerBucket assistant_wheel_[ASSISTANT_WHEEL_SIZE];
+  TimerBucket work_wheel_[WORK_WHEEL_SIZE];            // mark: 内圈
+  TimerBucket assistant_wheel_[ASSISTANT_WHEEL_SIZE];  // mark: 外圈
   uint64_t current_work_wheel_index_ = 0;
   std::mutex current_work_wheel_index_mutex_;
   uint64_t current_assistant_wheel_index_ = 0;

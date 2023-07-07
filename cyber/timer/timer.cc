@@ -78,10 +78,12 @@ bool Timer::InitTimerTask() {
       if (!task) {
         return;
       }
+
       std::lock_guard<std::mutex> lg(task->mutex);
       auto start = Time::MonoTime().ToNanosecond();
       callback();
       auto end = Time::MonoTime().ToNanosecond();
+
       uint64_t execute_time_ns = end - start;
       uint64_t execute_time_ms =
 #if defined(__aarch64__)
@@ -89,37 +91,50 @@ bool Timer::InitTimerTask() {
 #else
           std::llround(static_cast<double>(execute_time_ns) / 1e6);
 #endif
+
       if (task->last_execute_time_ns == 0) {
         task->last_execute_time_ns = start;
       } else {
+        // mark: start - task->last_execute_time_ns
+        // 为2次执行真实间隔时间，task->interval_ms是设定的间隔时间
+        // 注意误差会修复补偿，因此这里用的是累计，2次误差会抵消，保持绝对误差为0
         task->accumulated_error_ns +=
             start - task->last_execute_time_ns - task->interval_ms * 1000000;
       }
+
       ADEBUG << "start: " << start << "\t last: " << task->last_execute_time_ns
              << "\t execut time:" << execute_time_ms
              << "\t accumulated_error_ns: " << task->accumulated_error_ns;
       task->last_execute_time_ns = start;
+
       if (execute_time_ms >= task->interval_ms) {
+        // mark: 如果执行时间大于任务周期时间，则下一个tick马上执行
         task->next_fire_duration_ms = TIMER_RESOLUTION_MS;
+
       } else {
+
 #if defined(__aarch64__)
         int64_t accumulated_error_ms = ::llround(
 #else
         int64_t accumulated_error_ms = std::llround(
 #endif
             static_cast<double>(task->accumulated_error_ns) / 1e6);
+
         if (static_cast<int64_t>(task->interval_ms - execute_time_ms -
                                  TIMER_RESOLUTION_MS) >= accumulated_error_ms) {
+          // mark: 这里会补偿误差
           task->next_fire_duration_ms =
               task->interval_ms - execute_time_ms - accumulated_error_ms;
         } else {
           task->next_fire_duration_ms = TIMER_RESOLUTION_MS;
         }
+
         ADEBUG << "error ms: " << accumulated_error_ms
                << "  execute time: " << execute_time_ms
                << " next fire: " << task->next_fire_duration_ms
                << " error ns: " << task->accumulated_error_ns;
       }
+
       TimingWheel::Instance()->AddTask(task);
     };
   }

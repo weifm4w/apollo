@@ -40,6 +40,7 @@ TaskManager::TaskManager()
     while (!stop_) {
       std::function<void()> task;
       if (!task_queue_->Dequeue(&task)) {
+        // mark: 当前无任务,协程挂起
         auto routine = croutine::CRoutine::GetCurrentRoutine();
         routine->HangUp();
         continue;

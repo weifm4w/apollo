@@ -30,8 +30,8 @@ struct TimerTask {
   uint64_t timer_id_ = 0;
   std::function<void()> callback;
   uint64_t interval_ms = 0;
-  uint64_t remainder_interval_ms = 0;
-  uint64_t next_fire_duration_ms = 0;
+  uint64_t remainder_interval_ms = 0;  // mark: 内圈index
+  uint64_t next_fire_duration_ms = 0;  // mark: 下次运行时间差
   int64_t accumulated_error_ns = 0;
   uint64_t last_execute_time_ns = 0;
   std::mutex mutex;

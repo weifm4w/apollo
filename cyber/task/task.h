@@ -27,6 +27,7 @@ namespace cyber {
 
 using apollo::cyber::common::GlobalData;
 
+// mark: 任务放到协程池里异步运行
 template <typename F, typename... Args>
 static auto Async(F&& f, Args&&... args)
     -> std::future<typename std::result_of<F(Args...)>::type> {
