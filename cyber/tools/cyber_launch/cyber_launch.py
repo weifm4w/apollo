@@ -141,13 +141,13 @@ class ProcessWrapper(object):
         else:
             args_list = [self.binary_path]
             for i in self.dag_list:
-                args_list.append('-d')
+                args_list.append('-d')  # mark: -d dag config file
                 args_list.append(i)
             if len(self.name) != 0:
-                args_list.append('-p')
+                args_list.append('-p')  # mark: -p process_name:the process namespace for running this module
                 args_list.append(self.name)
             if len(self.sched_name) != 0:
-                args_list.append('-s')
+                args_list.append('-s')  # mark: -s sched_name: sched policy
                 args_list.append(self.sched_name)
 
         self.args = args_list

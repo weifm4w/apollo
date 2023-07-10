@@ -40,6 +40,7 @@ using apollo::cyber::croutine::RoutineState;
 
 SchedulerClassic::SchedulerClassic() {
   std::string conf("conf/");
+  // mark:通过 -p, --process_group 指定的配置文件
   conf.append(GlobalData::Instance()->ProcessGroup()).append(".conf");
   auto cfg_file = GetAbsolutePath(WorkRoot(), conf);
 

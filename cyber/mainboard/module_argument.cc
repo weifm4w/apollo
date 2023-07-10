@@ -42,7 +42,8 @@ void ModuleArgument::DisplayUsage() {
 
 void ModuleArgument::ParseArgument(const int argc, char* const argv[]) {
   binary_name_ = std::string(basename(argv[0]));
-  GetOptions(argc, argv);
+
+  GetOptions(argc, argv); // MARK: 参数解析
 
   if (process_group_.empty()) {
     process_group_ = DEFAULT_process_group_;

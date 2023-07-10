@@ -50,12 +50,14 @@ std::string program_path() {
 }
 }  // namespace
 
+// mark:构造前已完成参数解析,mainboard.cc=>module_args.ParseArgument(argc,argv);
 GlobalData::GlobalData() {
   InitHostInfo();
   ACHECK(InitConfig());
   process_id_ = getpid();
   auto prog_path = program_path();
   if (!prog_path.empty()) {
+    // mark:fileName_PID
     process_group_ = GetFileName(prog_path) + "_" + std::to_string(process_id_);
   } else {
     process_group_ = "cyber_default_" + std::to_string(process_id_);

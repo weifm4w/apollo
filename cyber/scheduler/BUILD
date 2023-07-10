@@ -23,7 +23,7 @@ cc_library(
 
 cc_library(
     name = "processor_context",
-    srcs = ["processor_context.cc"],
+    # srcs = ["processor_context.cc"],
     hdrs = ["processor_context.h"],
     deps = [
         "//cyber/croutine",

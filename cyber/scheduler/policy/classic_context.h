@@ -39,23 +39,21 @@ static constexpr uint32_t MAX_PRIO = 20;
 
 #define DEFAULT_GROUP_NAME "default_grp"
 
+// clang-format off
 // mark: 管理 CRoutine 上下文, 根据 CRoutine 的 group_name 和 priority 设计
 //       CroutineContextManager 命名更贴切
-
-// mark: 协程数组
-using CroutineQueue = std::vector<std::shared_ptr<CRoutine>>;
-// mark: 数组下标代表 priority
-using PriorityCroutineQueue = std::array<CroutineQueue, MAX_PRIO>;
-// mark: 不同用途的协程组, key:group_name
+//       一个 group_name 对应一个线程和协程池
+using CroutineQueue = std::vector<std::shared_ptr<CRoutine>>;  // mark:协程数组
+using PriorityCroutineQueue = std::array<CroutineQueue, MAX_PRIO>; // mark:数组下标代表priority
+// mark:不同用途的协程组,key:group_name
 using CroutinesGroup = std::unordered_map<std::string, PriorityCroutineQueue>;
-
 using LockQueue = std::array<base::AtomicRWLock, MAX_PRIO>;
 using LockQueueGroup = std::unordered_map<std::string, LockQueue>;
 
 using CvGroup = std::unordered_map<std::string, CvWrapper>;
 using MutexGroup = std::unordered_map<std::string, MutexWrapper>;
-// mark: Notify()时计数器+1, Wait()唤醒时计数器-1
-using NotifyGroup = std::unordered_map<std::string, int>;  // mark: int:counter
+using NotifyGroup = std::unordered_map<std::string, int>;  // mark:int:counter,Notify()时计数器+1,Wait()唤醒时计数器-1
+// clang-format on
 
 class ClassicContext : public ProcessorContext {
  public:
@@ -69,7 +67,7 @@ class ClassicContext : public ProcessorContext {
   static void Notify(const std::string &group_name);
   static bool RemoveCRoutine(const std::shared_ptr<CRoutine> &cr);
 
-  // mark: 关键管理 croutines_group_
+  // MARK: 关键管理 croutines_group_
   alignas(CACHELINE_SIZE) static CroutinesGroup croutines_group_;
   alignas(CACHELINE_SIZE) static LockQueueGroup locks_group_;
 
