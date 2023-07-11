@@ -4,7 +4,7 @@ module_library : "/apollo/bazel-bin/cyber/examples/common_component_example/libc
 components {
     class_name : "CommonComponentSample"
     config {
-        name : "common_dag" # 节点名
+        name : "common" # 节点名
         readers {
             channel: "/apollo/prediction"
         }

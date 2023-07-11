@@ -1,11 +1,13 @@
-<!-- cyber_launch.py 脚本解析本配置 -->
+<!-- cyber_launch.py 脚本解析此配置 -->
 <cyber>
+    <!-- 可以有多个 module -->
     <module>
-        <!-- launch名字 -->
-        <name>common_launch_n</name>
+        <!-- module 名 -->
+        <name>common</name>
         <!-- 可以有多个 dag_conf -->
         <dag_conf>/apollo/cyber/examples/common_component_example/common.dag</dag_conf>
-        <!-- 解析成 -p process_group,作为 mainboard 参数; 作为日志前缀[common] -->
+        <!-- 解析成 -p process_group 作为 mainboard 参数; 也作为日志前缀[common] -->
+        <!-- process_name 同名的组件将会在同一个进程中加载​​并运行 -->
         <process_name>common</process_name>
     </module>
 </cyber>
