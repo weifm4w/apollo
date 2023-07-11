@@ -22,6 +22,24 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "talker_rawmsg",
+    srcs = ["talker_rawmsg.cc"],
+    deps = [
+        "//cyber",
+        "//cyber/examples/proto:examples_cc_proto",
+    ],
+)
+
+cc_binary(
+    name = "listener_rawmsg",
+    srcs = ["listener_rawmsg.cc"],
+    deps = [
+        "//cyber",
+        "//cyber/examples/proto:examples_cc_proto",
+    ],
+)
+
 install(
     name = "install",
     targets = [
