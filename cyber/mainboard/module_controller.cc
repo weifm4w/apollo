@@ -40,7 +40,7 @@ bool ModuleController::LoadAll() {
   const std::string dag_root_path = common::GetAbsolutePath(work_root, "dag");
   std::vector<std::string> paths;
   // mark: 解析 dag 配置
-  for (auto& dag_conf : args_.GetDAGConfList()) {
+  for (auto& dag_conf : args_.GetDAGFileList()) {
     std::string module_path = "";
     if (dag_conf == common::GetFileName(dag_conf)) {
       // case dag conf argument var is a filename

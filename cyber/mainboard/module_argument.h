@@ -41,10 +41,10 @@ class ModuleArgument {
   const std::string& GetBinaryName() const;
   const std::string& GetProcessGroup() const;
   const std::string& GetSchedName() const;
-  const std::list<std::string>& GetDAGConfList() const;
+  const std::list<std::string>& GetDAGFileList() const;
 
  private:
-  std::list<std::string> dag_conf_list_;
+  std::list<std::string> dag_file_list_;
   std::string binary_name_;
   std::string process_group_;
   std::string sched_name_;
@@ -62,8 +62,8 @@ inline const std::string& ModuleArgument::GetSchedName() const {
   return sched_name_;
 }
 
-inline const std::list<std::string>& ModuleArgument::GetDAGConfList() const {
-  return dag_conf_list_;
+inline const std::list<std::string>& ModuleArgument::GetDAGFileList() const {
+  return dag_file_list_;
 }
 
 }  // namespace mainboard

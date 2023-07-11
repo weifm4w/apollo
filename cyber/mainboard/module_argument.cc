@@ -56,8 +56,8 @@ void ModuleArgument::ParseArgument(const int argc, char* const argv[]) {
   GlobalData::Instance()->SetProcessGroup(process_group_);
   GlobalData::Instance()->SetSchedName(sched_name_);
   AINFO << "binary_name_ is " << binary_name_ << ", process_group_ is "
-        << process_group_ << ", has " << dag_conf_list_.size() << " dag conf";
-  for (std::string& dag : dag_conf_list_) {
+        << process_group_ << ", has " << dag_file_list_.size() << " dag conf";
+  for (std::string& dag : dag_file_list_) {
     AINFO << "dag_conf: " << dag;
   }
 }
@@ -94,10 +94,10 @@ void ModuleArgument::GetOptions(const int argc, char* const argv[]) {
     }
     switch (opt) {
       case 'd':
-        dag_conf_list_.emplace_back(std::string(optarg));
+        dag_file_list_.emplace_back(std::string(optarg));
         for (int i = optind; i < argc; i++) {
           if (*argv[i] != '-') {
-            dag_conf_list_.emplace_back(std::string(argv[i]));
+            dag_file_list_.emplace_back(std::string(argv[i]));
           } else {
             break;
           }
@@ -123,7 +123,7 @@ void ModuleArgument::GetOptions(const int argc, char* const argv[]) {
     exit(1);
   }
 
-  if (dag_conf_list_.empty()) {
+  if (dag_file_list_.empty()) {
     AINFO << "-d parameter must be specified";
     DisplayUsage();
     exit(1);
