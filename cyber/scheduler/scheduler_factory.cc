@@ -53,7 +53,7 @@ Scheduler* Instance() {
     std::lock_guard<std::mutex> lock(mutex);
     obj = instance.load(std::memory_order_relaxed);
     if (obj == nullptr) {
-      std::string policy("classic");
+      std::string policy("classic");  // mark:默认调度策略
       std::string conf("conf/");
       conf.append(GlobalData::Instance()->ProcessGroup()).append(".conf");
       auto cfg_file = GetAbsolutePath(WorkRoot(), conf);
@@ -64,14 +64,14 @@ Scheduler* Instance() {
         AWARN << "Scheduler conf named " << cfg_file
               << " not found, use default.";
       }
-      // mark: new ctor中 创建线程 并 配置调度策略
       if (!policy.compare("classic")) {
+        // mark: new ctor 中 创建线程 并 配置调度策略
         obj = new SchedulerClassic();
       } else if (!policy.compare("choreography")) {
         obj = new SchedulerChoreography();
       } else {
         AWARN << "Invalid scheduler policy: " << policy;
-        obj = new SchedulerClassic(); // mark: 默认调度策略
+        obj = new SchedulerClassic();  // mark:默认调度策略
       }
       instance.store(obj, std::memory_order_release);
     }

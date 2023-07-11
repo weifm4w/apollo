@@ -49,6 +49,7 @@ CRoutine::CRoutine(const std::function<void()> &func) : func_(func) {
     auto &global_conf = common::GlobalData::Instance()->Config();
     if (global_conf.has_scheduler_conf() &&
         global_conf.scheduler_conf().has_routine_num()) {
+      // mark:协程总数取全局配置 cyber.pb.conf 和 dag 组件个数最大值
       routine_num =
           std::max(routine_num, global_conf.scheduler_conf().routine_num());
     }

@@ -53,7 +53,9 @@ std::string program_path() {
 // mark:构造前已完成参数解析,mainboard.cc=>module_args.ParseArgument(argc,argv);
 GlobalData::GlobalData() {
   InitHostInfo();
-  ACHECK(InitConfig());
+
+  ACHECK(InitConfig());  // MARK:解析cyber配置 cyber_conf.proto
+
   process_id_ = getpid();
   auto prog_path = program_path();
   if (!prog_path.empty()) {
