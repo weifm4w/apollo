@@ -142,4 +142,51 @@
   }
 #endif
 
+#define CL_MAGE1 "\e[1;35m"
+#define CL_MAGE0 "\e[0;35m"
+#define CL_RESET "\e[1;00m"
+
+#include <chrono>
+#include <iomanip>
+
+class LifetimeFlow {
+ public:
+  explicit LifetimeFlow(const char* file, int line, const char* func,
+                        const std::string& msg = "")
+      : file_(file),
+        line_(line),
+        func_(func),
+        msg_(msg),
+        last_(std::chrono::steady_clock::now()) {
+    google::LogMessage(file_, line_, google::INFO).stream()
+        << CL_MAGE1 << ">>> [" << func_ << "] " << CL_RESET << msg_;
+  }
+  ~LifetimeFlow() {
+    auto now = std::chrono::steady_clock::now();
+    auto diff =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - last_)
+            .count();
+    google::LogMessage(file_, line_, google::INFO).stream()
+        << CL_MAGE0 << "<<< [" << func_ << "] " << CL_RESET << msg_ << "["
+        << "expend " << diff / 1000 << "." << std::setw(3) << std::setfill('0')
+        << diff % 1000 << " sec]";
+  }
+
+ private:
+  const char* const file_;
+  int line_;
+  const char* const func_;
+  std::string msg_;
+  std::chrono::time_point<std::chrono::steady_clock> last_;
+};
+
+// clang-format off
+#define __FLOW_DEFINE__(msg, uid) LifetimeFlow __flow_var_##uid##__{__FILE__, __LINE__, __FUNCTION__, msg}
+#define __FLOW_HELPER__(msg, uid) __FLOW_DEFINE__(msg, uid)
+
+#define FLOW2MSG(msg) __FLOW_HELPER__(msg, __COUNTER__)
+#define FLOW2()       FLOW2MSG("")
+#define AFLOW         google::LogMessage(__FILE__, __LINE__, google::INFO).stream()  \
+                                         << CL_MAGE1 << "==> [" << __FUNCTION__ << "] " << CL_RESET
+// clang-format on
 #endif  // CYBER_COMMON_LOG_H_
