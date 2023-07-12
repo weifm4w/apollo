@@ -29,15 +29,21 @@
 
 #include "cyber/binary.h"
 
+#define CL_MAGE1 "\e[1;35m"
+#define CL_MAGE0 "\e[0;35m"
+#define CL_DEBUG "\e[32;3m"
+#define CL_RESET "\e[1;00m"
+
 #define LEFT_BRACKET "["
-#define RIGHT_BRACKET "]"
+#define RIGHT_BRACKET "] "
 
 #ifndef MODULE_NAME
 #define MODULE_NAME apollo::cyber::binary::GetName().c_str()
 #endif
 
-#define ADEBUG_MODULE(module) \
-  VLOG(4) << LEFT_BRACKET << module << RIGHT_BRACKET << "[DEBUG] "
+#define ADEBUG_MODULE(module)                                          \
+  VLOG(4) << LEFT_BRACKET << __FUNCTION__ << RIGHT_BRACKET << CL_DEBUG \
+          << "[D] " << CL_RESET
 #define ADEBUG ADEBUG_MODULE(MODULE_NAME)
 #define AINFO ALOG_MODULE(MODULE_NAME, INFO)
 #define AWARN ALOG_MODULE(MODULE_NAME, WARN)
@@ -50,7 +56,7 @@
 
 #ifndef ALOG_MODULE
 #define ALOG_MODULE(module, log_severity) \
-  ALOG_MODULE_STREAM(log_severity)(module)
+  ALOG_MODULE_STREAM(log_severity)(__FUNCTION__)
 #endif
 
 #define ALOG_MODULE_STREAM_INFO(module)                         \
@@ -142,10 +148,6 @@
   }
 #endif
 
-#define CL_MAGE1 "\e[1;35m"
-#define CL_MAGE0 "\e[0;35m"
-#define CL_RESET "\e[1;00m"
-
 #include <chrono>
 #include <iomanip>
 
@@ -159,7 +161,7 @@ class LifetimeFlow {
         msg_(msg),
         last_(std::chrono::steady_clock::now()) {
     google::LogMessage(file_, line_, google::INFO).stream()
-        << CL_MAGE1 << ">>> [" << func_ << "] " << CL_RESET << msg_;
+        << CL_MAGE1 << "[" << func_ << "] <<<" << CL_RESET << msg_;
   }
   ~LifetimeFlow() {
     auto now = std::chrono::steady_clock::now();
@@ -167,7 +169,7 @@ class LifetimeFlow {
         std::chrono::duration_cast<std::chrono::milliseconds>(now - last_)
             .count();
     google::LogMessage(file_, line_, google::INFO).stream()
-        << CL_MAGE0 << "<<< [" << func_ << "] " << CL_RESET << msg_ << "["
+        << CL_MAGE0 << "[" << func_ << "] >>>" << CL_RESET << msg_ << " ["
         << "expend " << diff / 1000 << "." << std::setw(3) << std::setfill('0')
         << diff % 1000 << " sec]";
   }
@@ -187,6 +189,6 @@ class LifetimeFlow {
 #define FLOW2MSG(msg) __FLOW_HELPER__(msg, __COUNTER__)
 #define FLOW2()       FLOW2MSG("")
 #define AFLOW         google::LogMessage(__FILE__, __LINE__, google::INFO).stream()  \
-                                         << CL_MAGE1 << "==> [" << __FUNCTION__ << "] " << CL_RESET
+                                         << CL_MAGE1 << "[" << __FUNCTION__ << "] <== " << CL_RESET
 // clang-format on
 #endif  // CYBER_COMMON_LOG_H_
