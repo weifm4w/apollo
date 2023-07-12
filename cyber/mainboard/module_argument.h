@@ -28,6 +28,7 @@ namespace apollo {
 namespace cyber {
 namespace mainboard {
 
+// mark: 未定义配置文件
 static const char DEFAULT_process_group_[] = "mainboard_default";
 static const char DEFAULT_sched_name_[] = "CYBER_DEFAULT";
 

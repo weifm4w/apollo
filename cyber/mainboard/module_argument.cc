@@ -41,9 +41,10 @@ void ModuleArgument::DisplayUsage() {
 }
 
 void ModuleArgument::ParseArgument(const int argc, char* const argv[]) {
+  FLOW2();
   binary_name_ = std::string(basename(argv[0]));
 
-  GetOptions(argc, argv); // MARK: 参数解析
+  GetOptions(argc, argv);  // MARK: 参数解析
 
   if (process_group_.empty()) {
     process_group_ = DEFAULT_process_group_;
@@ -63,6 +64,7 @@ void ModuleArgument::ParseArgument(const int argc, char* const argv[]) {
 }
 
 void ModuleArgument::GetOptions(const int argc, char* const argv[]) {
+  FLOW2();
   opterr = 0;  // extern int opterr
   int long_index = 0;
   const std::string short_opts = "hd:p:s:";

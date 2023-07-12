@@ -25,13 +25,17 @@ using apollo::cyber::mainboard::ModuleArgument;
 using apollo::cyber::mainboard::ModuleController;
 
 int main(int argc, char** argv) {
+  AFLOW << "main";
   // parse the argument
   ModuleArgument module_args;
+  // mark:参数解析,并初始化 GlobalData
   module_args.ParseArgument(argc, argv);
 
+  AFLOW << "Init cyber";
   // initialize cyber
   apollo::cyber::Init(argv[0]);
 
+  AFLOW << "Init ModuleController";
   // start module
   ModuleController controller(module_args);
   if (!controller.Init()) {
@@ -40,7 +44,9 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  AFLOW << "WaitForShutdown";
   apollo::cyber::WaitForShutdown();
+  AFLOW << "controller.Clear";
   controller.Clear();
   AINFO << "exit mainboard.";
 

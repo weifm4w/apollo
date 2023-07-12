@@ -52,6 +52,7 @@ std::string program_path() {
 
 // mark:构造前已完成参数解析,mainboard.cc=>module_args.ParseArgument(argc,argv);
 GlobalData::GlobalData() {
+  FLOW2();
   InitHostInfo();
 
   ACHECK(InitConfig());  // MARK:解析cyber配置 cyber_conf.proto
@@ -158,6 +159,7 @@ void GlobalData::InitHostInfo() {
 }
 
 bool GlobalData::InitConfig() {
+  FLOW2();
   auto config_path = GetAbsolutePath(WorkRoot(), "conf/cyber.pb.conf");
   if (!GetProtoFromFile(config_path, &config_)) {
     AERROR << "read cyber default conf failed!";

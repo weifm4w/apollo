@@ -94,10 +94,12 @@ void OnShutdown(int sig) {
 void ExitHandle() { Clear(); }
 
 bool Init(const char* binary_name) {
+  FLOW2();
   std::lock_guard<std::mutex> lg(g_mutex);
   if (GetState() != STATE_UNINITIALIZED) {
     return false;
   }
+  // FLOW2();
 
   InitLogger(binary_name);
   auto thread = const_cast<std::thread*>(async_logger->LogThread());
