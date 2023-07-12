@@ -54,16 +54,20 @@ Scheduler* Instance() {
     obj = instance.load(std::memory_order_relaxed);
     if (obj == nullptr) {
       std::string policy("classic");  // mark:默认调度策略
+
       std::string conf("conf/");
+      // mark:尝试解析 process_group.conf全局cyber配置,通过-p指定 process_group
       conf.append(GlobalData::Instance()->ProcessGroup()).append(".conf");
+
       auto cfg_file = GetAbsolutePath(WorkRoot(), conf);
       apollo::cyber::proto::CyberConfig cfg;
       if (PathExists(cfg_file) && GetProtoFromFile(cfg_file, &cfg)) {
         policy = cfg.scheduler_conf().policy();
       } else {
         AWARN << "Scheduler conf named " << cfg_file
-              << " not found, use default.";
+              << " not found, use default scheduler.";
       }
+
       if (!policy.compare("classic")) {
         // mark: new ctor 中 创建线程 并 配置调度策略
         obj = new SchedulerClassic();
@@ -73,6 +77,7 @@ Scheduler* Instance() {
         AWARN << "Invalid scheduler policy: " << policy;
         obj = new SchedulerClassic();  // mark:默认调度策略
       }
+
       instance.store(obj, std::memory_order_release);
     }
   }

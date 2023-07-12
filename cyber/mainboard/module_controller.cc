@@ -39,34 +39,34 @@ bool ModuleController::LoadAll() {
   const std::string current_path = common::GetCurrentPath();
   const std::string dag_root_path = common::GetAbsolutePath(work_root, "dag");
   std::vector<std::string> paths;
-  // mark: 解析 dag 配置
-  for (auto& dag_conf : args_.GetDAGFileList()) {
-    std::string module_path = "";
-    if (dag_conf == common::GetFileName(dag_conf)) {
+  // mark: 解析 dag 文件路径
+  for (auto& dag_file : args_.GetDAGFileList()) {
+    std::string dag_file_path = "";
+    if (dag_file == common::GetFileName(dag_file)) {
       // case dag conf argument var is a filename
-      module_path = common::GetAbsolutePath(dag_root_path, dag_conf);
-    } else if (dag_conf[0] == '/') {
+      dag_file_path = common::GetAbsolutePath(dag_root_path, dag_file);
+    } else if (dag_file[0] == '/') {
       // case dag conf argument var is an absolute path
-      module_path = dag_conf;
+      dag_file_path = dag_file;
     } else {
       // case dag conf argument var is a relative path
-      module_path = common::GetAbsolutePath(current_path, dag_conf);
-      if (!common::PathExists(module_path)) {
-        module_path = common::GetAbsolutePath(work_root, dag_conf);
+      dag_file_path = common::GetAbsolutePath(current_path, dag_file);
+      if (!common::PathExists(dag_file_path)) {
+        dag_file_path = common::GetAbsolutePath(work_root, dag_file);
       }
     }
-    total_component_nums += GetComponentNum(module_path);
-    paths.emplace_back(std::move(module_path));
+    total_component_nums += GetComponentNum(dag_file_path);
+    paths.emplace_back(std::move(dag_file_path));
   }
   if (has_timer_component) {
     total_component_nums += scheduler::Instance()->TaskPoolSize();
   }
   common::GlobalData::Instance()->SetComponentNums(total_component_nums);
   // mark: 加载 module 共享库, 并创建和初始化 components
-  for (auto module_path : paths) {
-    AINFO << "Start initialize dag: " << module_path;
-    if (!LoadModule(module_path)) {
-      AERROR << "Failed to load module: " << module_path;
+  for (auto dag_file_path : paths) {
+    AINFO << "Start initialize dag: " << dag_file_path;
+    if (!LoadModule(dag_file_path)) {
+      AERROR << "Failed to load module: " << dag_file_path;
       return false;
     }
   }

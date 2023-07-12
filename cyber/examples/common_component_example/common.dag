@@ -1,16 +1,19 @@
 # Define all coms in DAG streaming.
+# mark: 一个 dag 文件可包含多个 module_config, 协议描述: dag_conf.proto
 module_config {
-module_library : "/apollo/bazel-bin/cyber/examples/common_component_example/libcommon_component_example.so"
-components {
-    class_name : "CommonComponentSample"
-    config {
-        name : "common" # 节点名
-        readers {
-            channel: "/apollo/prediction"
-        }
-        readers {
-            channel: "/apollo/test"
+    module_library : "/apollo/bazel-bin/cyber/examples/common_component_example/libcommon_component_example.so"
+
+    # mark: 一个 module_config 可包含多个 components / timer_components
+    components {
+        class_name : "CommonComponentSample"
+        config {
+            name : "common" # 节点名
+            readers {
+                channel: "/apollo/prediction"
+            }
+            readers {
+                channel: "/apollo/test"
+            }
         }
     }
-  }
 }
