@@ -25,7 +25,7 @@ using apollo::cyber::mainboard::ModuleArgument;
 using apollo::cyber::mainboard::ModuleController;
 
 int main(int argc, char** argv) {
-  AFLOW << "main";
+  FLOW2MSG("main");
   // parse the argument
   ModuleArgument module_args;
   // mark:参数解析,并初始化 GlobalData

@@ -20,6 +20,7 @@
 
 #include "cyber/common/global_data.h"
 #include "cyber/common/log.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/state.h"
 #include "cyber/time/time.h"
 
@@ -116,6 +117,7 @@ void PerfEventCache::AddTransportEvent(const TransPerf event_id,
 }
 
 void PerfEventCache::Run() {
+  scheduler::SetThisThreadName("perf_event_cache");
   EventBasePtr event;
   int buf_size = 0;
   while (!shutdown_ && !apollo::cyber::IsShutdown()) {

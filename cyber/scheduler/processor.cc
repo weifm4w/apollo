@@ -25,6 +25,7 @@
 #include "cyber/common/global_data.h"
 #include "cyber/common/log.h"
 #include "cyber/croutine/croutine.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/time/time.h"
 
 namespace apollo {
@@ -33,13 +34,17 @@ namespace scheduler {
 
 using apollo::cyber::common::GlobalData;
 
+std::atomic<int> t_numb_{1};
+
 Processor::Processor() { running_.store(true); }
 
 Processor::~Processor() { Stop(); }
 
 void Processor::Run() {
+  auto tname = std::string("processor_") + std::to_string(t_numb_++);
+  SetThisThreadName(tname);
   tid_.store(static_cast<int>(syscall(SYS_gettid)));
-  AINFO << "processor_tid: " << tid_;
+  AFLOW << "processor_tid: " << tid_ << " tname: " << tname;
   snap_shot_->processor_id.store(tid_);
 
   while (cyber_likely(running_.load())) {

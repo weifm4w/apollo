@@ -26,6 +26,7 @@
 #include "cyber/common/log.h"
 #include "cyber/scheduler/scheduler_factory.h"
 #include "cyber/time/time.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -245,6 +246,7 @@ void Poller::Poll(int timeout_ms) {
 }
 
 void Poller::ThreadFunc() {
+  scheduler::SetThisThreadName("poller");
   // block all signals in this thread
   sigset_t signal_set;
   sigfillset(&signal_set);

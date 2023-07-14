@@ -23,6 +23,7 @@
 
 #include "cyber/base/macros.h"
 #include "cyber/logger/logger_util.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -87,6 +88,7 @@ void AsyncLogger::Flush() {
 uint32_t AsyncLogger::LogSize() { return wrapped_->LogSize(); }
 
 void AsyncLogger::RunThread() {
+  scheduler::SetThisThreadName("async_logger");
   while (state_ == RUNNING) {
     while (flag_.test_and_set(std::memory_order_acquire)) {
       cpu_relax();

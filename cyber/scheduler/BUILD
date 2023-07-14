@@ -18,6 +18,7 @@ cc_library(
     deps = [
         "//cyber/data",
         "//cyber/scheduler:processor_context",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

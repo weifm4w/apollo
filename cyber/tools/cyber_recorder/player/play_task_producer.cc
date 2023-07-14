@@ -24,6 +24,7 @@
 #include "cyber/cyber.h"
 #include "cyber/message/protobuf_factory.h"
 #include "cyber/record/record_viewer.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -222,6 +223,7 @@ bool PlayTaskProducer::CreateWriters() {
 }
 
 void PlayTaskProducer::ThreadFunc() {
+  scheduler::SetThisThreadName("play_task_producer");
   const uint64_t loop_time_ns =
       play_param_.end_time_ns - play_param_.begin_time_ns;
   uint64_t avg_interval_time_ns = kSleepIntervalNanoSec;

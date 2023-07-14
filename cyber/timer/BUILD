@@ -43,6 +43,7 @@ cc_library(
         "//cyber/time",
         "//cyber/time:duration",
         "//cyber/time:rate",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

@@ -36,6 +36,7 @@ cc_library(
         ":play_task_buffer",
         "//cyber/common:log",
         "//cyber/time",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 
@@ -54,6 +55,7 @@ cc_library(
         "//cyber/node:writer",
         "//cyber/record:record_reader",
         "//cyber/record:record_viewer",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 
@@ -67,6 +69,7 @@ cc_library(
         ":play_task_consumer",
         ":play_task_producer",
         "//cyber:init",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

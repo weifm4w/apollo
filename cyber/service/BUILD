@@ -29,6 +29,7 @@ cc_library(
     deps = [
         ":service_base",
         "//cyber/scheduler",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

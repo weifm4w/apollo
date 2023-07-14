@@ -27,6 +27,10 @@ namespace apollo {
 namespace cyber {
 namespace scheduler {
 
+long ThisTid();
+bool SetThreadName(pthread_t tid, const std::string& name);
+bool SetThisThreadName(const std::string& name);
+
 void ParseCpuset(const std::string& str, std::vector<int>* cpuset);
 
 void SetSchedAffinity(std::thread* thread, const std::vector<int>& cpus,

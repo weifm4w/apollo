@@ -17,6 +17,7 @@
 #include "cyber/tools/cyber_recorder/player/play_task_consumer.h"
 
 #include "cyber/common/log.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/time/time.h"
 
 namespace apollo {
@@ -66,6 +67,7 @@ void PlayTaskConsumer::Stop() {
 }
 
 void PlayTaskConsumer::ThreadFunc() {
+  scheduler::SetThisThreadName("play_task_consumer");
   uint64_t base_real_time_ns = 0;
   uint64_t accumulated_pause_time_ns = 0;
 

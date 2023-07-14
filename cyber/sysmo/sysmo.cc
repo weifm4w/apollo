@@ -17,6 +17,7 @@
 #include "cyber/sysmo/sysmo.h"
 
 #include "cyber/common/environment.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -45,6 +46,7 @@ void SysMo::Shutdown() {
 }
 
 void SysMo::Checker() {
+  scheduler::SetThisThreadName("sysmo");
   while (cyber_unlikely(!shut_down_.load())) {
     scheduler::Instance()->CheckSchedStatus();
     std::unique_lock<std::mutex> lk(lk_);

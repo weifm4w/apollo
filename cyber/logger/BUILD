@@ -40,6 +40,7 @@ cc_library(
         "//cyber/base:macros",
         "//cyber/common",
         "//cyber/logger:log_file_object",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

@@ -49,6 +49,7 @@ cc_library(
         "//cyber/common:macros",
         "//cyber/scheduler:scheduler_factory",
         "//cyber/time",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

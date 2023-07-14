@@ -23,6 +23,31 @@ namespace apollo {
 namespace cyber {
 namespace scheduler {
 
+#include <pthread.h>
+#include <sys/syscall.h>
+
+long ThisTid() {
+  static thread_local long thread_id = syscall(SYS_gettid);
+  return thread_id;
+}
+
+bool SetThreadName(pthread_t tid, const std::string& name) {
+  char thread_name[16];
+  memset(thread_name, 0, sizeof(thread_name));
+  strncpy(thread_name, name.c_str(), sizeof(thread_name) - 1);
+  int ret = pthread_setname_np(tid, thread_name);
+  if (ret != 0) {
+    AERROR << "SetThreadName: " << thread_name << " failed.";
+    return false;
+  }
+  AINFO << "SetThreadName: " << thread_name << " success.";
+  return true;
+}
+
+bool SetThisThreadName(const std::string& name) {
+  return SetThreadName(pthread_self(), name);
+}
+
 void ParseCpuset(const std::string& str, std::vector<int>* cpuset) {
   std::vector<std::string> lines;
   std::stringstream ss(str);

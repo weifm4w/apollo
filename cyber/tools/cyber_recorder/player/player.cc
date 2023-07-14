@@ -19,6 +19,7 @@
 #include <termios.h>
 
 #include "cyber/init.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -79,6 +80,7 @@ static char Getch() {
 }
 
 void Player::ThreadFunc_Term() {
+  scheduler::SetThisThreadName("recorder_player");
   while (!is_stopped_.load()) {
     char ch = Getch();
     switch (ch) {

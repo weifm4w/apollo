@@ -93,6 +93,7 @@ cc_library(
         "//cyber/transport/shm:notifier_factory",
         "//cyber/transport/shm:readable_info",
         "//cyber/transport/shm:segment_factory",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

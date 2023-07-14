@@ -24,6 +24,7 @@
 
 #include "cyber/common/types.h"
 #include "cyber/node/node_channel_impl.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/scheduler/scheduler.h"
 #include "cyber/service/service_base.h"
 
@@ -142,6 +143,8 @@ inline void Service<Request, Response>::Enqueue(std::function<void()>&& task) {
 
 template <typename Request, typename Response>
 void Service<Request, Response>::Process() {
+  FLOW2MSG(std::string("srv[") + request_channel_ + "]");
+  scheduler::SetThisThreadName(std::string("srv[") + request_channel_ + "]");
   while (!cyber::IsShutdown()) {
     std::unique_lock<std::mutex> ul(queue_mutex_);
     condition_.wait(ul, [this]() { return !inited_ || !this->tasks_.empty(); });

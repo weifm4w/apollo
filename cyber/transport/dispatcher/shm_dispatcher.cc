@@ -15,8 +15,10 @@
  *****************************************************************************/
 
 #include "cyber/transport/dispatcher/shm_dispatcher.h"
+
 #include "cyber/common/global_data.h"
 #include "cyber/common/util.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/scheduler/scheduler_factory.h"
 #include "cyber/transport/shm/readable_info.h"
 
@@ -100,6 +102,7 @@ void ShmDispatcher::OnMessage(uint64_t channel_id,
 }
 
 void ShmDispatcher::ThreadFunc() {
+  scheduler::SetThisThreadName("shm_dispatcher");
   ReadableInfo readable_info;
   while (!is_shutdown_.load()) {
     if (!notifier_->Listen(100, &readable_info)) {

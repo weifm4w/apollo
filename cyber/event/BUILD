@@ -22,6 +22,7 @@ cc_library(
         "//cyber/common:log",
         "//cyber/common:macros",
         "//cyber/time",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

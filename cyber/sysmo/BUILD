@@ -27,6 +27,7 @@ cc_library(
     hdrs = ["sysmo.h"],
     deps = [
         "//cyber/scheduler:scheduler_factory",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 
