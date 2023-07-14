@@ -150,7 +150,10 @@ bool Component<M0, NullType, NullType, NullType>::Process(
 inline bool Component<NullType, NullType, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
+  FLOW2MSG("M0");
+  AFLOW << "M0 component:\n" << config.DebugString();
   LoadConfigFiles(config);
+  AFLOW << "M0 Init " << config.name();
   if (!Init()) {
     AERROR << "Component Init() failed." << std::endl;
     return false;
@@ -162,7 +165,10 @@ template <typename M0>
 bool Component<M0, NullType, NullType, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
+  FLOW2MSG("M1");
+  AFLOW << "M1 component:\n" << config.DebugString();
   LoadConfigFiles(config);
+  AFLOW << "M1 Init " << config.name();
 
   if (config.readers_size() < 1) {
     AERROR << "Invalid config file: too few readers.";
@@ -186,6 +192,7 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
   auto func = [self](const std::shared_ptr<M0>& msg) {
     auto ptr = self.lock();
     if (ptr) {
+      AFLOW << "M1 Process";
       ptr->Process(msg);
     } else {
       AERROR << "Component object has been destroyed.";
@@ -215,6 +222,7 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
   auto dv = std::make_shared<data::DataVisitor<M0>>(conf);
   croutine::RoutineFactory factory =
       croutine::CreateRoutineFactory<M0>(func, dv);
+  AFLOW << "M1 scheduler";
   auto sched = scheduler::Instance();
   return sched->CreateTask(factory, node_->Name());
 }
@@ -232,7 +240,10 @@ template <typename M0, typename M1>
 bool Component<M0, M1, NullType, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
+  FLOW2MSG("M2");
+  AFLOW << "M2 component:\n" << config.DebugString();
   LoadConfigFiles(config);
+  AFLOW << "M2 Init " << config.name();
 
   if (config.readers_size() < 2) {
     AERROR << "Invalid config file: too few readers.";
@@ -292,6 +303,7 @@ bool Component<M0, M1, NullType, NullType>::Initialize(
     return true;
   }
 
+  AFLOW << "M2 scheduler";
   auto sched = scheduler::Instance();
   std::weak_ptr<Component<M0, M1>> self =
       std::dynamic_pointer_cast<Component<M0, M1>>(shared_from_this());
@@ -299,6 +311,7 @@ bool Component<M0, M1, NullType, NullType>::Initialize(
                      const std::shared_ptr<M1>& msg1) {
     auto ptr = self.lock();
     if (ptr) {
+      AFLOW << "M2 Process";
       ptr->Process(msg0, msg1);
     } else {
       AERROR << "Component object has been destroyed.";
@@ -329,7 +342,10 @@ template <typename M0, typename M1, typename M2>
 bool Component<M0, M1, M2, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
+  FLOW2MSG("M3");
+  AFLOW << "M3 component:\n" << config.DebugString();
   LoadConfigFiles(config);
+  AFLOW << "M3 Init " << config.name();
 
   if (config.readers_size() < 3) {
     AERROR << "Invalid config file: too few readers.";
@@ -400,6 +416,7 @@ bool Component<M0, M1, M2, NullType>::Initialize(
     return true;
   }
 
+  AFLOW << "M3 scheduler";
   auto sched = scheduler::Instance();
   std::weak_ptr<Component<M0, M1, M2, NullType>> self =
       std::dynamic_pointer_cast<Component<M0, M1, M2, NullType>>(
@@ -409,6 +426,7 @@ bool Component<M0, M1, M2, NullType>::Initialize(
                      const std::shared_ptr<M2>& msg2) {
     auto ptr = self.lock();
     if (ptr) {
+      AFLOW << "M3 Process";
       ptr->Process(msg0, msg1, msg2);
     } else {
       AERROR << "Component object has been destroyed.";
@@ -439,7 +457,10 @@ bool Component<M0, M1, M2, M3>::Process(const std::shared_ptr<M0>& msg0,
 template <typename M0, typename M1, typename M2, typename M3>
 bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  LoadConfigFiles(config);  // mark: 加载 .pb.txt & gflag 配置
+  FLOW2MSG("M4");
+  AFLOW << "M4 component:\n" << config.DebugString();
+  LoadConfigFiles(config);
+  AFLOW << "M4 Init " << config.name();
 
   if (config.readers_size() < 4) {
     AERROR << "Invalid config file: too few readers_." << std::endl;
@@ -529,6 +550,7 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
     // mark: 仿真环境到此结束
   }
 
+  AFLOW << "M4 scheduler";
   auto sched = scheduler::Instance();
   std::weak_ptr<Component<M0, M1, M2, M3>> self =
       std::dynamic_pointer_cast<Component<M0, M1, M2, M3>>(shared_from_this());
@@ -539,6 +561,7 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
         auto ptr = self.lock();
         if (ptr) {
           // mark: 用户消息回调
+          AFLOW << "M4 Process";
           ptr->Process(msg0, msg1, msg2, msg3);
         } else {
           AERROR << "Component object has been destroyed." << std::endl;

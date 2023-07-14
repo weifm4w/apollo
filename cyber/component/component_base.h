@@ -69,6 +69,7 @@ class ComponentBase : public std::enable_shared_from_this<ComponentBase> {
   virtual void Clear() { return; }
   const std::string& ConfigFilePath() const { return config_file_path_; }
 
+  // mark:基类公共方法, 主要解析 flagfile, config_file_path_ 无用途
   void LoadConfigFiles(const ComponentConfig& config) {
     if (!config.config_file_path().empty()) {
       if (config.config_file_path()[0] != '/') {
@@ -85,6 +86,7 @@ class ComponentBase : public std::enable_shared_from_this<ComponentBase> {
         flag_file_path =
             common::GetAbsolutePath(common::WorkRoot(), flag_file_path);
       }
+      AFLOW << "SetCommandLineOption flagfile: " << flag_file_path;
       google::SetCommandLineOption("flagfile", flag_file_path.c_str());
     }
   }
@@ -105,6 +107,7 @@ class ComponentBase : public std::enable_shared_from_this<ComponentBase> {
         flag_file_path =
             common::GetAbsolutePath(common::WorkRoot(), flag_file_path);
       }
+      AFLOW << "SetCommandLineOption flagfile: " << flag_file_path;
       google::SetCommandLineOption("flagfile", flag_file_path.c_str());
     }
   }

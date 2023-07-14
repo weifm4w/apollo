@@ -74,6 +74,8 @@ bool ModuleController::LoadAll() {
 }
 
 bool ModuleController::LoadModule(const DagConfig& dag_config) {
+  FLOW2();
+  AFLOW << "LoadModule dag conf:\n" << dag_config.DebugString();
   const std::string work_root = common::WorkRoot();
 
   for (auto module_config : dag_config.module_config()) {
@@ -91,6 +93,7 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
     }
 
     // mark: 加载 module 共享库
+    AFLOW << "LoadLibrary: " << load_path;
     class_loader_manager_.LoadLibrary(load_path);
 
     // mark: 通用 components 创建和初始化
@@ -99,6 +102,7 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
       std::shared_ptr<ComponentBase> base =
           class_loader_manager_.CreateClassObj<ComponentBase>(class_name);
       // mark: 初始化
+      AFLOW << "Initialize class_name: " << component.class_name();
       if (base == nullptr || !base->Initialize(component.config())) {
         return false;
       }
@@ -110,6 +114,7 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
       const std::string& class_name = component.class_name();
       std::shared_ptr<ComponentBase> base =
           class_loader_manager_.CreateClassObj<ComponentBase>(class_name);
+      AFLOW << "Initialize class_name: " << component.class_name();
       if (base == nullptr || !base->Initialize(component.config())) {
         return false;
       }
@@ -120,6 +125,7 @@ bool ModuleController::LoadModule(const DagConfig& dag_config) {
 }
 
 bool ModuleController::LoadModule(const std::string& path) {
+  AFLOW << "LoadModule dag file: " << path;
   DagConfig dag_config;
   if (!common::GetProtoFromFile(path, &dag_config)) {
     AERROR << "Get proto failed, file: " << path;

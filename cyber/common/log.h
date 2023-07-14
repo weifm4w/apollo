@@ -161,7 +161,7 @@ class LifetimeFlow {
         msg_(msg),
         last_(std::chrono::steady_clock::now()) {
     google::LogMessage(file_, line_, google::INFO).stream()
-        << CL_MAGE1 << "[" << func_ << "] <<<" << CL_RESET << msg_;
+        << CL_MAGE1 << "[" << func_ << "] <<< " << CL_RESET << msg_;
   }
   ~LifetimeFlow() {
     auto now = std::chrono::steady_clock::now();
@@ -169,7 +169,7 @@ class LifetimeFlow {
         std::chrono::duration_cast<std::chrono::milliseconds>(now - last_)
             .count();
     google::LogMessage(file_, line_, google::INFO).stream()
-        << CL_MAGE0 << "[" << func_ << "] >>>" << CL_RESET << msg_ << " ["
+        << CL_MAGE0 << "[" << func_ << "] >>> " << CL_RESET << msg_ << " ["
         << "expend " << diff / 1000 << "." << std::setw(3) << std::setfill('0')
         << diff % 1000 << " sec]";
   }

@@ -144,7 +144,7 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
     if (id_cr_map_.find(cr->id()) != id_cr_map_.end()) {
       return false;
     }
-    // mark: 注册 Croutine
+    // MARK: 注册 Croutine
     id_cr_map_[cr->id()] = cr;
   }
 
@@ -172,6 +172,9 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
         .at(cr->priority())
         .emplace_back(cr);
   }
+
+  AFLOW << "DispatchTask croutine[" << cr->name() << "] group_name["
+        << cr->group_name() << "] processor_id[" << cr->processor_id() << "]";
 
   // mark: 有新 Croutine 插入, 通知唤醒
   ClassicContext::Notify(cr->group_name());

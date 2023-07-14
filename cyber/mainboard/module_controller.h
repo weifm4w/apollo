@@ -56,7 +56,10 @@ class ModuleController {
 inline ModuleController::ModuleController(const ModuleArgument& args)
     : args_(args) {}
 
-inline bool ModuleController::Init() { return LoadAll(); }
+inline bool ModuleController::Init() {
+  FLOW2();
+  return LoadAll();
+}
 
 }  // namespace mainboard
 }  // namespace cyber

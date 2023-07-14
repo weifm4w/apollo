@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  AFLOW << "WaitForShutdown";
+  AFLOW << "WaitForShutdown......";
   apollo::cyber::WaitForShutdown();
   AFLOW << "controller.Clear";
   controller.Clear();

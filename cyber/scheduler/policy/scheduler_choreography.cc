@@ -150,6 +150,7 @@ bool SchedulerChoreography::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
     if (id_cr_map_.find(cr->id()) != id_cr_map_.end()) {
       return false;
     }
+    // MARK: 注册 Croutine
     id_cr_map_[cr->id()] = cr;
   }
 
@@ -176,6 +177,9 @@ bool SchedulerChoreography::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
           .emplace_back(cr);
     }
   }
+
+  AFLOW << "DispatchTask croutine[" << cr->name() << "] group_name["
+        << cr->group_name() << "] processor_id[" << cr->processor_id() << "]";
   return true;
 }
 
