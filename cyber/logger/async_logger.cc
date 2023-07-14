@@ -104,7 +104,12 @@ void AsyncLogger::FlushBuffer(const std::unique_ptr<std::deque<Msg>>& buffer) {
   std::string module_name = "";
   while (!buffer->empty()) {
     auto& msg = buffer->front();
-    FindModuleName(&(msg.message), &module_name);
+    // FindModuleName(&(msg.message), &module_name);
+    // MARK:原来每个模块一个日志文件,改为一个进程一个日志文件
+    auto global = apollo::cyber::common::GlobalData::Instance();
+    module_name = apollo::cyber::binary::GetName() + "." +
+                  global->ProcessGroup() + "." +
+                  std::to_string(global->ProcessId());
 
     if (module_logger_map_.find(module_name) == module_logger_map_.end()) {
       std::string file_name = module_name + ".log.INFO.";

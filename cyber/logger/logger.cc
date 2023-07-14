@@ -47,7 +47,12 @@ void Logger::Write(bool force_flush, time_t timestamp, const char* message,
   std::string log_message = std::string(message, message_len);
   std::string module_name;
   // set the same bracket as the bracket in log.h
-  FindModuleName(&log_message, &module_name);
+  // FindModuleName(&log_message, &module_name);
+  // MARK:原来每个模块一个日志文件,改为一个进程一个日志文件
+  auto global = apollo::cyber::common::GlobalData::Instance();
+  module_name = apollo::cyber::binary::GetName() + "." +
+                global->ProcessGroup() + "." +
+                std::to_string(global->ProcessId());
 
   LogFileObject* fileobject = nullptr;
   {
