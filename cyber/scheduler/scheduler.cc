@@ -55,12 +55,14 @@ bool Scheduler::CreateTask(std::function<void()>&& func,
   auto cr = std::make_shared<CRoutine>(func);
   cr->set_id(task_id);
   cr->set_name(name);
-  AINFO << "create croutine: " << name;
 
   // mark: 注册 CRoutine
   if (!DispatchTask(cr)) {
     return false;
   }
+
+  AFLOW << "create croutine[" << cr->name() << "] group_name["
+        << cr->group_name() << "] processor_id[" << cr->processor_id() << "]";
 
   if (visitor != nullptr) {
     visitor->RegisterNotifyCallback([this, task_id]() {

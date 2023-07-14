@@ -39,6 +39,7 @@ using apollo::cyber::common::WorkRoot;
 using apollo::cyber::croutine::RoutineState;
 
 SchedulerClassic::SchedulerClassic() {
+  FLOW2();
   std::string conf("conf/");
   // mark:通过 -p, --process_group 指定的配置文件
   conf.append(GlobalData::Instance()->ProcessGroup()).append(".conf");
@@ -46,6 +47,7 @@ SchedulerClassic::SchedulerClassic() {
 
   apollo::cyber::proto::CyberConfig cfg;
   if (PathExists(cfg_file) && GetProtoFromFile(cfg_file, &cfg)) {
+    AFLOW << "user conf: " << cfg_file;
     for (auto& thr : cfg.scheduler_conf().threads()) {
       inner_thr_confs_[thr.name()] = thr;
     }
@@ -64,6 +66,7 @@ SchedulerClassic::SchedulerClassic() {
       }
     }
   } else {
+    AFLOW << "default conf";
     // if do not set default_proc_num in scheduler conf
     // give a default value
     uint32_t proc_num = 2;
@@ -79,11 +82,14 @@ SchedulerClassic::SchedulerClassic() {
     sched_group->set_processor_num(proc_num);
   }
 
+  AFLOW << "classic_conf: \n" << classic_conf_.DebugString();
+
   // MARK: 创建线程和配置调度策略
   CreateProcessor();
 }
 
 void SchedulerClassic::CreateProcessor() {
+  FLOW2();
   // MARK: 1. groups 有多个调度组
   for (auto& group : classic_conf_.groups()) {
     auto& group_name = group.name();

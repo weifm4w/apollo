@@ -50,6 +50,7 @@ std::mutex mutex;
 Scheduler* Instance() {
   Scheduler* obj = instance.load(std::memory_order_acquire);
   if (obj == nullptr) {
+    FLOW2();
     std::lock_guard<std::mutex> lock(mutex);
     obj = instance.load(std::memory_order_relaxed);
     if (obj == nullptr) {
@@ -68,6 +69,7 @@ Scheduler* Instance() {
               << " not found, use default scheduler.";
       }
 
+      AFLOW << "scheduler policy: " << policy;
       if (!policy.compare("classic")) {
         // mark: new ctor 中 创建线程 并 配置调度策略
         obj = new SchedulerClassic();

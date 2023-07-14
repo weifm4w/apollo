@@ -99,7 +99,6 @@ bool Init(const char* binary_name) {
   if (GetState() != STATE_UNINITIALIZED) {
     return false;
   }
-  // FLOW2();
 
   InitLogger(binary_name);
   auto thread = const_cast<std::thread*>(async_logger->LogThread());
