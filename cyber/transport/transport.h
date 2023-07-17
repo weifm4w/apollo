@@ -83,6 +83,7 @@ template <typename M>
 auto Transport::CreateTransmitter(const RoleAttributes& attr,
                                   const OptionalMode& mode) ->
     typename std::shared_ptr<Transmitter<M>> {
+  FLOW2MSG("mode:" + std::to_string(mode) + " node:" + attr.node_name());
   if (is_shutdown_.load()) {
     AINFO << "transport has been shut down.";
     return nullptr;

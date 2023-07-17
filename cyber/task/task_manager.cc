@@ -40,7 +40,6 @@ TaskManager::TaskManager()
   auto func = [this]() {
     auto tname = "T:task_manager_" + std::to_string(__COUNTER__);
     FLOW2MSG(tname);
-    AFLOW << tname;
     while (!stop_) {
       std::function<void()> task;
       if (!task_queue_->Dequeue(&task)) {
@@ -61,6 +60,7 @@ TaskManager::TaskManager()
   // mark: tasks_ 只做线程统一ID标记,具体在 scheduler 中做线程管理
   for (uint32_t i = 0; i < num_threads_; i++) {
     auto task_name = task_prefix + std::to_string(i);
+    AFLOW << "add task[" << task_name << "]";
     tasks_.push_back(common::GlobalData::RegisterTaskName(task_name));
     if (!scheduler::Instance()->CreateTask(factory, task_name)) {
       AERROR << "CreateTask failed:" << task_name;

@@ -256,6 +256,7 @@ void Reader<MessageT>::Observe() {
 
 template <typename MessageT>
 bool Reader<MessageT>::Init() {
+  FLOW2MSG("Reader Init");
   if (init_.exchange(true)) {
     return true;
   }
@@ -275,6 +276,7 @@ bool Reader<MessageT>::Init() {
   // Using factory to wrap templates.
   croutine::RoutineFactory factory =
       croutine::CreateRoutineFactory<MessageT>(std::move(func), dv);
+  AFLOW << "CreateTask: " << croutine_name_;
   if (!sched->CreateTask(factory, croutine_name_)) {
     AERROR << "Create Task Failed!";
     init_.store(false);

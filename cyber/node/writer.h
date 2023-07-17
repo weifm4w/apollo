@@ -122,6 +122,7 @@ Writer<MessageT>::~Writer() {
 
 template <typename MessageT>
 bool Writer<MessageT>::Init() {
+  FLOW2MSG("Writer Init");
   {
     std::lock_guard<std::mutex> g(lock_);
     if (init_) {
