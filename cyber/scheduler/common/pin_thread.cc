@@ -31,21 +31,27 @@ long ThisTid() {
   return thread_id;
 }
 
-bool SetThreadName(pthread_t tid, const std::string& name) {
+bool SetThreadName(pthread_t tid, const std::string& name, const char* file,
+                   int line, const char* func) {
   char thread_name[16];
   memset(thread_name, 0, sizeof(thread_name));
   strncpy(thread_name, name.c_str(), sizeof(thread_name) - 1);
   int ret = pthread_setname_np(tid, thread_name);
   if (ret != 0) {
-    AERROR << "SetThreadName: " << thread_name << " failed.";
+    google::LogMessage(file, line, google::ERROR).stream()
+        << CL_DEBUG << "[" << func << "] T:" << thread_name << CL_RESET
+        << " failed.";
     return false;
   }
-  AINFO << "SetThreadName: " << thread_name << " success.";
+  google::LogMessage(file, line, google::INFO).stream()
+      << CL_DEBUG << "[" << func << "] T:" << thread_name << CL_RESET
+      << " success.";
   return true;
 }
 
-bool SetThisThreadName(const std::string& name) {
-  return SetThreadName(pthread_self(), name);
+bool SetThisThreadName(const std::string& name, const char* file, int line,
+                       const char* func) {
+  return SetThreadName(pthread_self(), name, file, line, func);
 }
 
 void ParseCpuset(const std::string& str, std::vector<int>* cpuset) {

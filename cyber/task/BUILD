@@ -36,6 +36,7 @@ cc_library(
     copts = ["-faligned-new"],
     deps = [
         "//cyber/scheduler:scheduler_factory",
+        "//cyber/scheduler:pin_thread",
     ],
 )
 

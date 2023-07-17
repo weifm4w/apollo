@@ -246,7 +246,7 @@ void Poller::Poll(int timeout_ms) {
 }
 
 void Poller::ThreadFunc() {
-  scheduler::SetThisThreadName("poller");
+  SET_THIS_THREAD_NAME("poller");
   // block all signals in this thread
   sigset_t signal_set;
   sigfillset(&signal_set);

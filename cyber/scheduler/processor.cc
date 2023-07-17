@@ -42,7 +42,7 @@ Processor::~Processor() { Stop(); }
 
 void Processor::Run() {
   auto tname = std::string("processor_") + std::to_string(t_numb_++);
-  SetThisThreadName(tname);
+  SET_THIS_THREAD_NAME(tname);
   tid_.store(static_cast<int>(syscall(SYS_gettid)));
   AFLOW << "processor_tid: " << tid_ << " tname: " << tname;
   snap_shot_->processor_id.store(tid_);

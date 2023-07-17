@@ -88,7 +88,7 @@ void AsyncLogger::Flush() {
 uint32_t AsyncLogger::LogSize() { return wrapped_->LogSize(); }
 
 void AsyncLogger::RunThread() {
-  scheduler::SetThisThreadName("async_logger");
+  SET_THIS_THREAD_NAME("async_logger");
   while (state_ == RUNNING) {
     while (flag_.test_and_set(std::memory_order_acquire)) {
       cpu_relax();

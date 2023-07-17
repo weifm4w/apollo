@@ -127,7 +127,7 @@ void TimingWheel::Cascade(const uint64_t assistant_wheel_index) {
 }
 
 void TimingWheel::TickFunc() {
-  scheduler::SetThisThreadName("timing_wheel");
+  SET_THIS_THREAD_NAME("timing_wheel");
   Rate rate(TIMER_RESOLUTION_MS * 1000000);  // ms to ns
   while (running_) {
     Tick();  // mark: 运行内圈当前index任务队列

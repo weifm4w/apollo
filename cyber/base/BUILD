@@ -165,6 +165,9 @@ cc_test(
 cc_library(
     name = "thread_pool",
     hdrs = ["thread_pool.h"],
+    deps = [
+        "//cyber/scheduler:pin_thread",
+    ],
 )
 
 cc_library(

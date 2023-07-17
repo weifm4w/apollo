@@ -38,6 +38,9 @@ TaskManager::TaskManager()
 
   // mark: 线程处理模板, 循环处理 Enqueue 的任务, 任务是协程化
   auto func = [this]() {
+    auto tname = "T:task_manager_" + std::to_string(__COUNTER__);
+    FLOW2MSG(tname);
+    AFLOW << tname;
     while (!stop_) {
       std::function<void()> task;
       if (!task_queue_->Dequeue(&task)) {
