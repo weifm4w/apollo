@@ -181,6 +181,7 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
   return true;
 }
 
+// mark: 唤醒线程执行协程
 bool SchedulerClassic::NotifyProcessor(uint64_t crid) {
   if (cyber_unlikely(stop_)) {
     return true;

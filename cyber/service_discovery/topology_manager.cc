@@ -110,7 +110,6 @@ bool TopologyManager::CreateParticipant() {
   std::string participant_name =
       common::GlobalData::Instance()->HostName() + '+' +
       std::to_string(common::GlobalData::Instance()->ProcessId());
-  AFLOW << participant_name;
   participant_listener_ = new ParticipantListener(std::bind(
       &TopologyManager::OnParticipantChange, this, std::placeholders::_1));
   participant_ = std::make_shared<transport::Participant>(

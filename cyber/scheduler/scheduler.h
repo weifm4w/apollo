@@ -91,7 +91,7 @@ class Scheduler {
   AtomicHashMap<uint64_t, MutexWrapper*> id_mutex_map_;
   std::mutex id_mutex_map_mtx_;
 
-  // MARK: 核心
+  // MARK: 核心,用于索引通知线程执行协程
   std::unordered_map<uint64_t, std::shared_ptr<CRoutine>> id_cr_map_;
   std::vector<std::shared_ptr<ProcessorContext>> processor_ctxs_;
   std::vector<std::shared_ptr<Processor>> processors_;
