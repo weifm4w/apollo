@@ -106,14 +106,14 @@ void SchedulerClassic::CreateProcessor() {
 
     // MARK: 2. 一个调度组内有多个线程,一个线程管理一个协程组 ProcessorContext
     for (uint32_t i = 0; i < proc_num; i++) {
-      // mark: 协程组管理上下文, 根据 CRoutine 的 group_name 和 priority 设计
+      // 协程组管理上下文, 根据 CRoutine 的 group_name 和 priority 设计
       auto ctx = std::make_shared<ClassicContext>(group_name);
       processor_ctxs_.emplace_back(ctx);
 
-      // mark: Processor 代码cpu核, 绑定 Croutine 的同时, 创建线程
+      // MARK: 3. Processor 代表cpu核, 绑定 Croutine 的同时创建线程,
+      //       一个线程绑定一个 ProcessorContext 协程组管理上下文
       auto proc = std::make_shared<Processor>();
-      // MARK: 3. 一个线程绑定一个 ProcessorContext 协程组管理上下文
-      proc->BindContext(ctx);  // mark: note 创建线程
+      proc->BindContext(ctx);  // mark: 创建线程
 
       // mark: 配置线程cpu亲和性与调度策略
       SetSchedAffinity(proc->Thread(), cpuset, affinity, i);
@@ -193,7 +193,7 @@ bool SchedulerClassic::NotifyProcessor(uint64_t crid) {
       auto cr = id_cr_map_[crid];
       if (cr->state() == RoutineState::DATA_WAIT ||
           cr->state() == RoutineState::IO_WAIT) {
-        cr->SetUpdateFlag();
+        cr->SetUpdateFlag();  // mark: 标记有数据更新
       }
 
       ClassicContext::Notify(cr->group_name());

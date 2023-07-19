@@ -72,7 +72,8 @@ CRoutine::CRoutine(const std::function<void()> &func) : func_(func) {
 CRoutine::~CRoutine() { context_ = nullptr; }
 
 // mark: 恢复协程
-//       Resume()负责把当前寄存器中的信息即主体调试线程执行上下文保存至main_stack_中，然后再把CRoutine对象context_中保存的协程上下文恢复到寄存器中，将控制权交给协程
+//       Resume()负责把当前寄存器中的信息即主体调试线程执行上下文保存至main_stack_中,
+//       然后再把CRoutine对象context_中保存的协程上下文恢复到寄存器中,将控制权交给协程
 RoutineState CRoutine::Resume() {
   if (cyber_unlikely(force_stop_)) {
     state_ = RoutineState::FINISHED;

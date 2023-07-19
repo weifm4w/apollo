@@ -56,13 +56,16 @@ RoutineFactory CreateRoutineFactory(
     return [=]() {
       std::shared_ptr<M0> msg;
       for (;;) {
+        // mark:先设置:DATA_WAIT,等待数据,第一次可往下执行,第二次之后需调度才执行
         CRoutine::GetCurrentRoutine()->set_state(RoutineState::DATA_WAIT);
+        // 尝试看有没数据
         if (dv->TryFetch(msg)) {
-          f(msg);
+          f(msg);  // 有数据则回调,结束后设置:READY,并让出cpu
           CRoutine::Yield(RoutineState::READY);
         } else {
-          CRoutine::Yield();
+          CRoutine::Yield();  // 无数据则让出cpu
         }
+        // 此时已让出cpu,被调度时才继续执行
       }
     };
   };

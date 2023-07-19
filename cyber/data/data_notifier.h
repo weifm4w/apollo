@@ -79,6 +79,15 @@ inline bool DataNotifier::Notify(const uint64_t channel_id) {
       if (notifier && notifier->callback) {
         // mark:通知监听器
         notifier->callback();
+        /* Scheduler::CreateTask =>
+          visitor->RegisterNotifyCallback([this, task_id]() {
+            if (cyber_unlikely(stop_.load())) {
+              return;
+            }
+            mark: 2.观察到新消息, 通知唤醒线程去处理 CRoutine
+            this->NotifyProcessor(task_id);
+          });
+        */
       }
     }
     return true;

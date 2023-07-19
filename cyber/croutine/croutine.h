@@ -107,8 +107,9 @@ class CRoutine {
 
   std::shared_ptr<RoutineContext> context_;  // mark: 协程上下文
 
+  // mark:协程锁,Acquire()获取锁资源,Release()释放锁资源,协程被Acquire()之后再次被Acquire()会失败
   std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
-  std::atomic_flag updated_ = ATOMIC_FLAG_INIT;
+  std::atomic_flag updated_ = ATOMIC_FLAG_INIT;  // mark:数据更新标识
 
   bool force_stop_ = false;
 
@@ -187,6 +188,7 @@ inline RoutineState CRoutine::UpdateState() {
   }
 
   // Asynchronous Event Mechanism
+  // mark: SetUpdateFlag()中clear(),说明有数据更新,state_:置为:READY
   if (!updated_.test_and_set(std::memory_order_release)) {
     if (state_ == RoutineState::DATA_WAIT || state_ == RoutineState::IO_WAIT) {
       state_ = RoutineState::READY;
