@@ -53,6 +53,21 @@ class HasSerializer {
 template <typename T>
 constexpr bool HasSerializer<T>::value;
 
+/*
+mark: cyber收发消息种类总分为三种：
+a.由.proto文件编译生成的，这种消息都是继承自google::protobuf::Message
+b.原始消息RawMessage，有文件raw_message实现，为了统一规范，该类实现了类似protobuf实现的接口函数
+c.用于python通信的PyMessageWrap，由py_message文件实现，原理类似RawMessage。
+为了给他们提供统一的对外接口，才有了该文件，对模板函数进行多次重载，用于实现不同的消息种类，最后给外面呈现的统一接口名字。
+*/
+
+// MessageType 有七个重载函数，根据四个条件不同情况进行不同6个的重载
+//    1.有无接口TypeName
+//    2.接口是静态接口还是成员接口
+//    3.是否继承自 google::protobuf::Message
+//    4.有无函数参数
+
+//重载1：有TypeName接口，是成员函数，有函数参数
 template <typename T,
           typename std::enable_if<HasType<T>::value &&
                                       std::is_member_function_pointer<
@@ -62,6 +77,7 @@ std::string MessageType(const T& message) {
   return message.TypeName();
 }
 
+//重载2：有TypeName接口，不是成员函数（是静态接口），有函数参数
 template <typename T,
           typename std::enable_if<HasType<T>::value &&
                                       !std::is_member_function_pointer<
@@ -71,6 +87,7 @@ std::string MessageType(const T& message) {
   return T::TypeName();
 }
 
+//重载3：无TypeName接口，不继承自google::protobuf::Message，有函数参数
 template <typename T,
           typename std::enable_if<
               !HasType<T>::value &&
@@ -80,6 +97,7 @@ std::string MessageType(const T& message) {
   return typeid(T).name();
 }
 
+//重载4：有TypeName接口，不是成员函数，没函数参数
 template <typename T,
           typename std::enable_if<HasType<T>::value &&
                                       !std::is_member_function_pointer<
@@ -89,6 +107,7 @@ std::string MessageType() {
   return T::TypeName();
 }
 
+//重载5：无TypeName接口，不继承自google::protobuf::Message，没函数参数
 template <typename T,
           typename std::enable_if<
               !HasType<T>::value &&
@@ -98,6 +117,7 @@ std::string MessageType() {
   return typeid(T).name();
 }
 
+//重载6：有TypeName接口，是成员函数（是静态接口）,不继承自google::protobuf::Message，没函数参数
 template <
     typename T,
     typename std::enable_if<
@@ -109,6 +129,7 @@ std::string MessageType() {
   return typeid(T).name();
 }
 
+// SetTypeName 两个重载，模板参数T有SetTypeName接口就调用，没有就不调用
 template <typename T>
 typename std::enable_if<HasSetType<T>::value, void>::type SetTypeName(
     const std::string& type_name, T* message) {
@@ -119,6 +140,8 @@ template <typename T>
 typename std::enable_if<!HasSetType<T>::value, void>::type SetTypeName(
     const std::string& type_name, T* message) {}
 
+// ByteSize
+// 两个重载，模板参数T有ByteSizeLong接口就调用，没有就不调用，直接返回-1
 template <typename T>
 typename std::enable_if<HasByteSize<T>::value, int>::type ByteSize(
     const T& message) {
@@ -132,6 +155,7 @@ typename std::enable_if<!HasByteSize<T>::value, int>::type ByteSize(
   return -1;
 }
 
+// FullByteSize 代表消息头+消息体的大小
 template <typename T>
 int FullByteSize(const T& message) {
   int content_size = ByteSize(message);
@@ -141,6 +165,8 @@ int FullByteSize(const T& message) {
   return content_size + static_cast<int>(sizeof(MessageHeader));
 }
 
+// ParseFromArray
+// 两个重载，模板参数T有ParseFromArray接口就调用，没有就不调用，直接返回false
 template <typename T>
 typename std::enable_if<HasParseFromArray<T>::value, bool>::type ParseFromArray(
     const void* data, int size, T* message) {
@@ -153,6 +179,8 @@ ParseFromArray(const void* data, int size, T* message) {
   return false;
 }
 
+// ParseFromString
+// 两个重载，模板参数T有ParseFromString接口就调用，没有就不调用，直接返回false
 template <typename T>
 typename std::enable_if<HasParseFromString<T>::value, bool>::type
 ParseFromString(const std::string& str, T* message) {
@@ -165,6 +193,8 @@ ParseFromString(const std::string& str, T* message) {
   return false;
 }
 
+// ParseFromHC 两个重载，HC我理解为HeaderContent的缩写，为消息头和消息体
+//模板参数T有HasParseFromArray接口就做一番处理，没有直接返回false
 template <typename T>
 typename std::enable_if<HasParseFromArray<T>::value, bool>::type ParseFromHC(
     const void* data, int size, T* message) {
@@ -184,6 +214,8 @@ typename std::enable_if<!HasParseFromArray<T>::value, bool>::type ParseFromHC(
   return false;
 }
 
+// SerializeToArray
+// 两个重载，模板参数T有SerializeToArray接口就调用，没有就不调用，直接返回false
 template <typename T>
 typename std::enable_if<HasSerializeToArray<T>::value, bool>::type
 SerializeToArray(const T& message, void* data, int size) {
@@ -196,6 +228,8 @@ SerializeToArray(const T& message, void* data, int size) {
   return false;
 }
 
+// SerializeToString
+// 两个重载，模板参数T有SerializeToString接口就调用，没有就不调用，直接返回false
 template <typename T>
 typename std::enable_if<HasSerializeToString<T>::value, bool>::type
 SerializeToString(const T& message, std::string* str) {
@@ -208,6 +242,8 @@ SerializeToString(const T& message, std::string* str) {
   return false;
 }
 
+// SerializeToHC
+// 两个重载，模板参数T有SerializeToArray接口就调用，没有就不调用，直接返回false
 template <typename T>
 typename std::enable_if<HasSerializeToArray<T>::value, bool>::type
 SerializeToHC(const T& message, void* data, int size) {
@@ -229,6 +265,7 @@ SerializeToHC(const T& message, void* data, int size) {
   return SerializeToArray(message, reinterpret_cast<void*>(ptr), left_size);
 }
 
+// GetDescriptorString 三个重载
 template <typename T>
 typename std::enable_if<!HasSerializeToArray<T>::value, bool>::type
 SerializeToHC(const T& message, void* data, int size) {
@@ -254,6 +291,7 @@ template <typename MessageT,
               int>::type = 0>
 void GetDescriptorString(const MessageT& message, std::string* desc_str) {}
 
+// GetFullName 两个重载
 template <
     typename T, typename Descriptor,
     typename std::enable_if<HasFullName<Descriptor>::value, bool>::type = 0>
@@ -268,6 +306,7 @@ std::string GetFullName() {
   return typeid(T).name();
 }
 
+// GetMessageName 三个重载
 template <typename T,
           typename std::enable_if<
               HasDescriptor<T>::value &&

@@ -54,6 +54,8 @@ class ErrorCollector : public google::protobuf::DescriptorPool::ErrorCollector {
                   ErrorLocation location, const std::string& message) override;
 };
 
+// mark:对消息进行注册和查询，注册主要包括消息、消息描述、消息文件描述等，注册之后就可以根据上述任一值查询到其他值。
+
 class ProtobufFactory {
  public:
   ~ProtobufFactory();
