@@ -28,6 +28,8 @@ namespace base {
 /**
  * @brief A implementation of lock-free fixed size hash map
  *
+ * @mark: https://blog.csdn.net/liujiayu2/article/details/129440662
+ *
  * @tparam K Type of key, must be integral
  * @tparam V Type of value
  * @tparam 128 Size of hash table

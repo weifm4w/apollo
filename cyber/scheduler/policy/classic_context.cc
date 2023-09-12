@@ -51,6 +51,7 @@ void ClassicContext::InitGroup(const std::string& group_name) {
 
 // mark: priority_croutines_ 插入Croutine的时机:SchedulerClassic::DispatchTask()
 
+// mark: 协程调度,根据优先队列 priority_croutines_ 调度
 std::shared_ptr<CRoutine> ClassicContext::NextRoutine() {
   if (cyber_unlikely(stop_.load())) {
     return nullptr;
@@ -63,6 +64,7 @@ std::shared_ptr<CRoutine> ClassicContext::NextRoutine() {
         continue;
       }
 
+      // mark: 返回 READY 待运行状态的协程
       if (cr->UpdateState() == RoutineState::READY) {
         return cr;
       }

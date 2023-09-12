@@ -150,7 +150,7 @@ bool Component<M0, NullType, NullType, NullType>::Process(
 inline bool Component<NullType, NullType, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  FLOW2MSG("M0");
+  FLOW2MSG("M0: " + config.name());
   AFLOW << "M0 component:\n" << config.DebugString();
   LoadConfigFiles(config);
   AFLOW << "M0 Init " << config.name();
@@ -165,16 +165,16 @@ template <typename M0>
 bool Component<M0, NullType, NullType, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  FLOW2MSG("M1");
+  FLOW2MSG("M1: " + config.name());
   AFLOW << "M1 component:\n" << config.DebugString();
   LoadConfigFiles(config);
-  AFLOW << "M1 Init " << config.name();
 
   if (config.readers_size() < 1) {
     AERROR << "Invalid config file: too few readers.";
     return false;
   }
 
+  AFLOW << "M1 Init " << config.name();
   if (!Init()) {
     AERROR << "Component Init() failed.";
     return false;
@@ -202,6 +202,7 @@ bool Component<M0, NullType, NullType, NullType>::Initialize(
   std::shared_ptr<Reader<M0>> reader = nullptr;
 
   if (cyber_likely(is_reality_mode)) {
+    FLOW2MSG("CreateReader M0");
     reader = node_->CreateReader<M0>(reader_cfg);
   } else {
     reader = node_->CreateReader<M0>(reader_cfg, func);
@@ -240,16 +241,16 @@ template <typename M0, typename M1>
 bool Component<M0, M1, NullType, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  FLOW2MSG("M2");
+  FLOW2MSG("M2: " + config.name());
   AFLOW << "M2 component:\n" << config.DebugString();
   LoadConfigFiles(config);
-  AFLOW << "M2 Init " << config.name();
 
   if (config.readers_size() < 2) {
     AERROR << "Invalid config file: too few readers.";
     return false;
   }
 
+  AFLOW << "M2 Init " << config.name();
   if (!Init()) {
     AERROR << "Component Init() failed.";
     return false;
@@ -262,6 +263,7 @@ bool Component<M0, M1, NullType, NullType>::Initialize(
   reader_cfg.qos_profile.CopyFrom(config.readers(1).qos_profile());
   reader_cfg.pending_queue_size = config.readers(1).pending_queue_size();
 
+  FLOW2MSG("CreateReader M1");
   auto reader1 = node_->template CreateReader<M1>(reader_cfg);
 
   reader_cfg.channel_name = config.readers(0).channel();
@@ -270,6 +272,7 @@ bool Component<M0, M1, NullType, NullType>::Initialize(
 
   std::shared_ptr<Reader<M0>> reader0 = nullptr;
   if (cyber_likely(is_reality_mode)) {
+    FLOW2MSG("CreateReader M0");
     reader0 = node_->template CreateReader<M0>(reader_cfg);
   } else {
     std::weak_ptr<Component<M0, M1>> self =
@@ -342,16 +345,16 @@ template <typename M0, typename M1, typename M2>
 bool Component<M0, M1, M2, NullType>::Initialize(
     const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  FLOW2MSG("M3");
+  FLOW2MSG("M3: " + config.name());
   AFLOW << "M3 component:\n" << config.DebugString();
   LoadConfigFiles(config);
-  AFLOW << "M3 Init " << config.name();
 
   if (config.readers_size() < 3) {
     AERROR << "Invalid config file: too few readers.";
     return false;
   }
 
+  AFLOW << "M3 Init " << config.name();
   if (!Init()) {
     AERROR << "Component Init() failed.";
     return false;
@@ -364,12 +367,14 @@ bool Component<M0, M1, M2, NullType>::Initialize(
   reader_cfg.qos_profile.CopyFrom(config.readers(1).qos_profile());
   reader_cfg.pending_queue_size = config.readers(1).pending_queue_size();
 
+    FLOW2MSG("CreateReader M1");
   auto reader1 = node_->template CreateReader<M1>(reader_cfg);
 
   reader_cfg.channel_name = config.readers(2).channel();
   reader_cfg.qos_profile.CopyFrom(config.readers(2).qos_profile());
   reader_cfg.pending_queue_size = config.readers(2).pending_queue_size();
 
+    FLOW2MSG("CreateReader M2");
   auto reader2 = node_->template CreateReader<M2>(reader_cfg);
 
   reader_cfg.channel_name = config.readers(0).channel();
@@ -377,6 +382,7 @@ bool Component<M0, M1, M2, NullType>::Initialize(
   reader_cfg.pending_queue_size = config.readers(0).pending_queue_size();
   std::shared_ptr<Reader<M0>> reader0 = nullptr;
   if (cyber_likely(is_reality_mode)) {
+    FLOW2MSG("CreateReader M0");
     reader0 = node_->template CreateReader<M0>(reader_cfg);
   } else {
     std::weak_ptr<Component<M0, M1, M2, NullType>> self =
@@ -457,16 +463,16 @@ bool Component<M0, M1, M2, M3>::Process(const std::shared_ptr<M0>& msg0,
 template <typename M0, typename M1, typename M2, typename M3>
 bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
   node_.reset(new Node(config.name()));
-  FLOW2MSG("M4");
+  FLOW2MSG("M4: " + config.name());
   AFLOW << "M4 component:\n" << config.DebugString();
   LoadConfigFiles(config);
-  AFLOW << "M4 Init " << config.name();
 
   if (config.readers_size() < 4) {
     AERROR << "Invalid config file: too few readers_." << std::endl;
     return false;
   }
 
+  AFLOW << "M4 Init " << config.name();
   // mark: 回调用户的初始化
   if (!Init()) {
     AERROR << "Component Init() failed." << std::endl;
@@ -481,18 +487,21 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
   reader_cfg.qos_profile.CopyFrom(config.readers(1).qos_profile());
   reader_cfg.pending_queue_size = config.readers(1).pending_queue_size();
 
+    FLOW2MSG("CreateReader M1");
   auto reader1 = node_->template CreateReader<M1>(reader_cfg);
 
   reader_cfg.channel_name = config.readers(2).channel();
   reader_cfg.qos_profile.CopyFrom(config.readers(2).qos_profile());
   reader_cfg.pending_queue_size = config.readers(2).pending_queue_size();
 
+    FLOW2MSG("CreateReader M2");
   auto reader2 = node_->template CreateReader<M2>(reader_cfg);
 
   reader_cfg.channel_name = config.readers(3).channel();
   reader_cfg.qos_profile.CopyFrom(config.readers(3).qos_profile());
   reader_cfg.pending_queue_size = config.readers(3).pending_queue_size();
 
+    FLOW2MSG("CreateReader M3");
   auto reader3 = node_->template CreateReader<M3>(reader_cfg);
 
   reader_cfg.channel_name = config.readers(0).channel();
@@ -502,6 +511,7 @@ bool Component<M0, M1, M2, M3>::Initialize(const ComponentConfig& config) {
   std::shared_ptr<Reader<M0>> reader0 = nullptr;
   if (cyber_likely(is_reality_mode)) {
     // mark: 真实环境
+    FLOW2MSG("CreateReader M0");
     reader0 = node_->template CreateReader<M0>(reader_cfg);
   } else {
     // mark: 仿真环境

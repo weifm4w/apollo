@@ -39,8 +39,8 @@ TaskManager::TaskManager()
 
   // mark: 线程处理模板, 循环处理 Enqueue 的任务, 任务是协程化
   auto func = [this]() {
-    auto tname = "task_manager_" + std::to_striing(__COUNTER__);
-    AFLOW << "add task: " << tname;
+    auto tname = "T:task_mng_" + std::to_string(__COUNTER__);
+    FLOW2MSG(tname);
     SetThisThreadName(tname);
     while (!stop_) {
       std::function<void()> task;
@@ -62,6 +62,7 @@ TaskManager::TaskManager()
   // mark: tasks_ 只做线程统一ID标记,具体在 scheduler 中做线程管理
   for (uint32_t i = 0; i < num_threads_; i++) {
     auto task_name = task_prefix + std::to_string(i);
+    AFLOW << "add task[" << task_name << "]";
     tasks_.push_back(common::GlobalData::RegisterTaskName(task_name));
     if (!scheduler::Instance()->CreateTask(factory, task_name)) {
       AERROR << "CreateTask failed:" << task_name;

@@ -66,6 +66,7 @@ class CacheBuffer {
   }
 
   void Fill(const T& value) {
+    // mark:DataDispatcher 分发线程
     if (fusion_callback_) {
       fusion_callback_(value);
     } else {

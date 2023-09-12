@@ -19,6 +19,7 @@
 #include <fcntl.h>
 
 #include "cyber/common/file.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/time/time.h"
 
 namespace apollo {
@@ -55,7 +56,11 @@ bool RecordFileWriter::Open(const std::string& path) {
   chunk_active_.reset(new Chunk());
   chunk_flush_.reset(new Chunk());
   is_writing_ = true;
-  flush_thread_ = std::make_shared<std::thread>([this]() { this->Flush(); });
+  flush_thread_ = std::make_shared<std::thread>([this]() {
+    FLOW2MSG("record_flush_thread_");
+    SET_THIS_THREAD_NAME("record_flush_thread_");
+    this->Flush();
+  });
   if (flush_thread_ == nullptr) {
     AERROR << "Init flush thread error.";
     return false;

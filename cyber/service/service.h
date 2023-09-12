@@ -144,7 +144,7 @@ inline void Service<Request, Response>::Enqueue(std::function<void()>&& task) {
 template <typename Request, typename Response>
 void Service<Request, Response>::Process() {
   FLOW2MSG(std::string("srv[") + request_channel_ + "]");
-  scheduler::SetThisThreadName(std::string("srv[") + request_channel_ + "]");
+  SET_THIS_THREAD_NAME(std::string("srv[") + request_channel_ + "]");
   while (!cyber::IsShutdown()) {
     std::unique_lock<std::mutex> ul(queue_mutex_);
     condition_.wait(ul, [this]() { return !inited_ || !this->tasks_.empty(); });

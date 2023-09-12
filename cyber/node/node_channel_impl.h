@@ -155,6 +155,9 @@ auto NodeChannelImpl::CreateWriter(const proto::RoleAttributes& role_attr)
     AERROR << "Can't create a writer with empty channel name!";
     return nullptr;
   }
+  FLOW2MSG("node[" + role_attr.node_name() + "] chn[" +
+           role_attr.channel_name() + "] srv[" + role_attr.service_name() +
+           "]");
   proto::RoleAttributes new_attr(role_attr);
   FillInAttr<MessageT>(&new_attr);
 
@@ -207,7 +210,9 @@ auto NodeChannelImpl::CreateReader(const proto::RoleAttributes& role_attr,
     AERROR << "Can't create a reader with empty channel name!";
     return nullptr;
   }
-
+  FLOW2MSG("node[" + role_attr.node_name() + "] chn[" +
+           role_attr.channel_name() + "] srv[" + role_attr.service_name() +
+           "]");
   proto::RoleAttributes new_attr(role_attr);
   FillInAttr<MessageT>(&new_attr);
 
@@ -221,6 +226,7 @@ auto NodeChannelImpl::CreateReader(const proto::RoleAttributes& role_attr,
   }
 
   RETURN_VAL_IF_NULL(reader_ptr, nullptr);
+  AFLOW << "reader Init";
   RETURN_VAL_IF(!reader_ptr->Init(), nullptr);
   return reader_ptr;
 }

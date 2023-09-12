@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "cyber/base/bounded_queue.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -56,7 +57,10 @@ inline ThreadPool::ThreadPool(std::size_t threads, std::size_t max_task_num)
   }
   workers_.reserve(threads);
   for (size_t i = 0; i < threads; ++i) {
-    workers_.emplace_back([this] {
+    workers_.emplace_back([this, i] {
+      auto tname = "thread_pool_t" + std::to_string(i);
+      FLOW2MSG(tname);
+      SET_THIS_THREAD_NAME(tname);
       while (!stop_) {
         std::function<void()> task;
         if (task_queue_.WaitDequeue(&task)) {

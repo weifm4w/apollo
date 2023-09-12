@@ -17,6 +17,7 @@
 #include "cyber/tools/cyber_recorder/recorder.h"
 
 #include "cyber/record/header_builder.h"
+#include "cyber/scheduler/common/pin_thread.h"
 
 namespace apollo {
 namespace cyber {
@@ -133,7 +134,7 @@ void Recorder::FindNewChannel(const RoleAttributes& role_attr) {
   }
 
   if (std::find(black_channels_.begin(), black_channels_.end(),
-      role_attr.channel_name()) != black_channels_.end()) {
+                role_attr.channel_name()) != black_channels_.end()) {
     ADEBUG << "New channel '" << role_attr.channel_name()
            << "' was found, but it appears in the blacklist.";
     return;
@@ -232,6 +233,7 @@ void Recorder::ReaderCallback(const std::shared_ptr<RawMessage>& message,
 }
 
 void Recorder::ShowProgress() {
+  SET_THIS_THREAD_NAME("record_ShowProgress");
   while (is_started_ && !is_stopping_) {
     std::cout << "\r[RUNNING]  Record Time: " << std::setprecision(3)
               << message_time_ / 1000000000

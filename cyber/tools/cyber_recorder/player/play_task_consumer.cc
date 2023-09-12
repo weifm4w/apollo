@@ -67,7 +67,7 @@ void PlayTaskConsumer::Stop() {
 }
 
 void PlayTaskConsumer::ThreadFunc() {
-  scheduler::SetThisThreadName("play_task_consumer");
+  SET_THIS_THREAD_NAME("play_task_consumer");
   uint64_t base_real_time_ns = 0;
   uint64_t accumulated_pause_time_ns = 0;
 

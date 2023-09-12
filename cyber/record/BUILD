@@ -45,6 +45,7 @@ cc_library(
         ":section",
         "//cyber/common:file",
         "//cyber/time",
+        "//cyber/scheduler:pin_thread",
         "@com_google_protobuf//:protobuf",
     ],
 )

@@ -46,7 +46,7 @@ void SysMo::Shutdown() {
 }
 
 void SysMo::Checker() {
-  scheduler::SetThisThreadName("sysmo");
+  SET_THIS_THREAD_NAME("sysmo");
   while (cyber_unlikely(!shut_down_.load())) {
     scheduler::Instance()->CheckSchedStatus();
     std::unique_lock<std::mutex> lk(lk_);

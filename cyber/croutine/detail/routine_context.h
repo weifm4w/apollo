@@ -52,6 +52,8 @@ struct RoutineContext {
 void MakeContext(const func& f1, const void* arg, RoutineContext* ctx);
 
 // mark: https://posts.careerengine.us/p/62aed9dde3363408e32189de
+// SwapContext暗含一个意思就是运行协程的执行体(即函数)
+// SwapContext是一个同步操作，会运行完该协程(暗含最后自己yield)或者遇见协程由于其他原因进行yield操作
 inline void SwapContext(char** src_sp, char** dest_sp) {
   ctx_swap(reinterpret_cast<void**>(src_sp), reinterpret_cast<void**>(dest_sp));
 }

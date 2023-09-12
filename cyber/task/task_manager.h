@@ -41,6 +41,7 @@ class TaskManager {
   auto Enqueue(F&& func, Args&&... args)
       -> std::future<typename std::result_of<F(Args...)>::type> {
     using return_type = typename std::result_of<F(Args...)>::type;
+    AFLOW << "T:task_manager add task_" << std::to_string(__COUNTER__);
 
     auto task = std::make_shared<std::packaged_task<return_type()>>(
         std::bind(std::forward<F>(func), std::forward<Args>(args)...));

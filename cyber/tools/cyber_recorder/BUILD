@@ -48,6 +48,7 @@ cc_library(
         "//cyber",
         "//cyber/common:log",
         "//cyber/proto:record_cc_proto",
+        "//cyber/scheduler:pin_thread",
         "@fastrtps",
     ],
 )

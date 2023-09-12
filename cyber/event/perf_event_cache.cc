@@ -117,7 +117,7 @@ void PerfEventCache::AddTransportEvent(const TransPerf event_id,
 }
 
 void PerfEventCache::Run() {
-  scheduler::SetThisThreadName("perf_event_cache");
+  SET_THIS_THREAD_NAME("perf_event_cache");
   EventBasePtr event;
   int buf_size = 0;
   while (!shutdown_ && !apollo::cyber::IsShutdown()) {

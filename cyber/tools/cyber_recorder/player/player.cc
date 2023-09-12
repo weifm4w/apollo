@@ -80,7 +80,7 @@ static char Getch() {
 }
 
 void Player::ThreadFunc_Term() {
-  scheduler::SetThisThreadName("recorder_player");
+  SET_THIS_THREAD_NAME("recorder_player");
   while (!is_stopped_.load()) {
     char ch = Getch();
     switch (ch) {

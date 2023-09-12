@@ -65,6 +65,7 @@ void TopologyManager::RemoveChangeListener(const ChangeConnection& conn) {
 }
 
 bool TopologyManager::Init() {
+  FLOW2();
   if (init_.exchange(true)) {
     return true;
   }
@@ -75,6 +76,7 @@ bool TopologyManager::Init() {
 
   CreateParticipant();
 
+  AFLOW << "Init Managers";
   bool result =
       InitNodeManager() && InitChannelManager() && InitServiceManager();
   if (!result) {

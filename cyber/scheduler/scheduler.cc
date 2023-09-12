@@ -58,17 +58,18 @@ bool Scheduler::CreateTask(std::function<void()>&& func,
 
   AFLOW << "CreateTask croutine[" << cr->name() << "]";
 
-  // mark: 注册 CRoutine
+  // mark: 1.注册 CRoutine
   if (!DispatchTask(cr)) {
     return false;
   }
 
   if (visitor != nullptr) {
+    // mark:注册消息监听器回调,回调时唤醒线程处理
     visitor->RegisterNotifyCallback([this, task_id]() {
       if (cyber_unlikely(stop_.load())) {
         return;
       }
-      // mark: 观察到新消息, 通知唤醒线程去处理
+      // mark: 2.观察到新消息, 通知唤醒线程去处理 CRoutine
       this->NotifyProcessor(task_id);
     });
   }

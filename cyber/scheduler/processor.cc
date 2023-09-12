@@ -42,25 +42,26 @@ Processor::~Processor() { Stop(); }
 
 void Processor::Run() {
   auto tname = std::string("processor_") + std::to_string(t_numb_++);
-  SetThisThreadName(tname);
+  SET_THIS_THREAD_NAME(tname);
   tid_.store(static_cast<int>(syscall(SYS_gettid)));
   AFLOW << "processor_tid: " << tid_ << " tname: " << tname;
   snap_shot_->processor_id.store(tid_);
 
   while (cyber_likely(running_.load())) {
     if (cyber_likely(context_ != nullptr)) {
-      // mark: 不停的消费协程任务
-      auto croutine = context_->NextRoutine();
+      // mark: 不停的消费协程任务,获取优先级最高并且准备就绪的协程
+      auto croutine = context_->NextRoutine();  // 1.Acquire()协程加锁
       if (croutine) {
         snap_shot_->execute_start_time.store(cyber::Time::Now().ToNanosecond());
         snap_shot_->routine_name = croutine->name();
-        croutine->Resume();
-        croutine->Release();
+        croutine->Resume();   // 2.唤醒协程运行,成后释放协程
+        croutine->Release();  // 3.Release()协程解锁
       } else {
         snap_shot_->execute_start_time.store(0);
-        context_->Wait();
+        context_->Wait();  // 如果协程组中没有空闲的协程,则等待
       }
     } else {
+      // 线程先创建运行,未BindContext时context_为nullptr,线程等待一会
       std::unique_lock<std::mutex> lk(mtx_ctx_);
       cv_ctx_.wait_for(lk, std::chrono::milliseconds(10));
     }

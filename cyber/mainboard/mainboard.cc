@@ -33,10 +33,12 @@ int main(int argc, char** argv) {
 
   AFLOW << "Init cyber";
   // initialize cyber
+  // mark:初始化log,scheduler,设置调度策略和启动线程
   apollo::cyber::Init(argv[0]);
 
   AFLOW << "Init ModuleController";
   // start module
+  // mark:模块初始化,动态库加载,注册component,根据dag注册协程和绑定用户回调
   ModuleController controller(module_args);
   if (!controller.Init()) {
     controller.Clear();

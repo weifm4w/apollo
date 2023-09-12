@@ -28,6 +28,11 @@ namespace apollo {
 namespace cyber {
 namespace message {
 
+// mark: MessageHeader 主要记录一些属性值，比如消息序列号、消息体的大小等，
+// message_traits.h 里面有两个接口 ParseFromHC 和 SerializeToHC
+//                就是专用来序列化和反序列化带这种带消息头的数据的，
+// 同进程内部通讯方式才采用的上这种消息头
+
 class MessageHeader {
  public:
   MessageHeader() {

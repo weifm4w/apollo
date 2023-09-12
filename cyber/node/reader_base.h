@@ -205,17 +205,22 @@ auto ReceiverManager<MessageT>::GetReceiver(
   const std::string& channel_name = role_attr.channel_name();
   if (receiver_map_.count(channel_name) == 0) {
     receiver_map_[channel_name] =
+        // mark:创建底层消息接收器
         transport::Transport::Instance()->CreateReceiver<MessageT>(
             role_attr, [](const std::shared_ptr<MessageT>& msg,
                           const transport::MessageInfo& msg_info,
                           const proto::RoleAttributes& reader_attr) {
+              // MARK:底层(intra/shm/rtps)消息到来回调
               (void)msg_info;
               (void)reader_attr;
               PerfEventCache::Instance()->AddTransportEvent(
                   TransPerf::DISPATCH, reader_attr.channel_id(),
                   msg_info.seq_num());
+
+              // MARK:消息分发
               data::DataDispatcher<MessageT>::Instance()->Dispatch(
                   reader_attr.channel_id(), msg);
+
               PerfEventCache::Instance()->AddTransportEvent(
                   TransPerf::NOTIFY, reader_attr.channel_id(),
                   msg_info.seq_num());

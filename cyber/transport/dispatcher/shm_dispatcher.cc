@@ -102,7 +102,7 @@ void ShmDispatcher::OnMessage(uint64_t channel_id,
 }
 
 void ShmDispatcher::ThreadFunc() {
-  scheduler::SetThisThreadName("shm_dispatcher");
+  SET_THIS_THREAD_NAME("shm_dispatcher");
   ReadableInfo readable_info;
   while (!is_shutdown_.load()) {
     if (!notifier_->Listen(100, &readable_info)) {

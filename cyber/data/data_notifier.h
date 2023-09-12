@@ -35,6 +35,7 @@ using apollo::cyber::Time;
 using apollo::cyber::base::AtomicHashMap;
 using apollo::cyber::event::PerfEventCache;
 
+// mark:通知监听器
 struct Notifier {
   std::function<void()> callback;
 };
@@ -51,6 +52,7 @@ class DataNotifier {
 
  private:
   std::mutex notifies_map_mutex_;
+  // mark: 所有需要通知的监听器
   AtomicHashMap<uint64_t, NotifyVector> notifies_map_;
 
   DECLARE_SINGLETON(DataNotifier)
@@ -75,7 +77,17 @@ inline bool DataNotifier::Notify(const uint64_t channel_id) {
   if (notifies_map_.Get(channel_id, &notifies)) {
     for (auto& notifier : *notifies) {
       if (notifier && notifier->callback) {
+        // mark:通知监听器
         notifier->callback();
+        /* Scheduler::CreateTask =>
+          visitor->RegisterNotifyCallback([this, task_id]() {
+            if (cyber_unlikely(stop_.load())) {
+              return;
+            }
+            mark: 2.观察到新消息, 通知唤醒线程去处理 CRoutine
+            this->NotifyProcessor(task_id);
+          });
+        */
       }
     }
     return true;

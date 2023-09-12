@@ -25,11 +25,20 @@
 
 namespace apollo {
 namespace cyber {
+
+#define SET_THREAD_NAME(tid, name) \
+  scheduler::SetThreadName(tid, name, __FILE__, __LINE__, __FUNCTION__)
+
+#define SET_THIS_THREAD_NAME(name) \
+  scheduler::SetThisThreadName(name, __FILE__, __LINE__, __FUNCTION__)
+
 namespace scheduler {
 
 long ThisTid();
-bool SetThreadName(pthread_t tid, const std::string& name);
-bool SetThisThreadName(const std::string& name);
+bool SetThreadName(pthread_t tid, const std::string& name, const char* file,
+                   int line, const char* func);
+bool SetThisThreadName(const std::string& name, const char* file, int line,
+                       const char* func);
 
 void ParseCpuset(const std::string& str, std::vector<int>* cpuset);
 

@@ -34,6 +34,7 @@ class DataVisitorBase {
  public:
   DataVisitorBase() : notifier_(new Notifier()) {}
 
+  // mark:注册监听器回调
   void RegisterNotifyCallback(std::function<void()>&& callback) {
     notifier_->callback = callback;
   }

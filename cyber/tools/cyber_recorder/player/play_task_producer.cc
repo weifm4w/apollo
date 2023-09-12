@@ -223,7 +223,7 @@ bool PlayTaskProducer::CreateWriters() {
 }
 
 void PlayTaskProducer::ThreadFunc() {
-  scheduler::SetThisThreadName("play_task_producer");
+  SET_THIS_THREAD_NAME("play_task_producer");
   const uint64_t loop_time_ns =
       play_param_.end_time_ns - play_param_.begin_time_ns;
   uint64_t avg_interval_time_ns = kSleepIntervalNanoSec;
