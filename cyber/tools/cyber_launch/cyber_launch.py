@@ -153,6 +153,7 @@ class ProcessWrapper(object):
         self.args = args_list
 
         try:
+            # mark: 创建子进程
             self.popen = subprocess.Popen(args_list, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
         except Exception as err:
@@ -163,6 +164,7 @@ class ProcessWrapper(object):
                 logger.error('Start process [%s] failed.' % self.name)
                 return 2
 
+        # mark: 这里可以设置进程名name=proc_name
         th = threading.Thread(target=module_monitor, args=(self, ))
         th.setDaemon(True)
         th.start()
@@ -438,15 +440,18 @@ def start(launch_file=''):
                     exception_handler)
             # Default is library
             else:
+                # mark: mainboard 加载动态库方式启动
                 pw = ProcessWrapper(
                     g_binary_name, 0, dag_dict[
                         str(process_name)], process_name,
                     process_type, sched_name, exception_handler)
+            # mark: 启动进程
             result = pw.start()
             if result != 0:
                 logger.error(
                     'Start manager [%s] failed. Stop all!' % process_name)
                 stop()
+            # mark: 注册进程,用于 cyber_launch stop
             pmon.register(pw)
             process_list.append(process_name)
 

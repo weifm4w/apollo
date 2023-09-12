@@ -1,5 +1,10 @@
 <!-- cyber_launch.py 脚本解析此配置 -->
 <cyber>
+    <!-- 可以有环境变量 -->
+    <environment>
+        <key1> value1 </key1>
+    </environment>
+
     <!-- 可以有多个 module -->
     <module>
         <!-- module 名 -->
@@ -12,5 +17,9 @@
         <!-- process_name 同名的组件将会在同一个进程中加载​​并运行 -->
         <!-- 如果 conf/common.conf 配置文件存在,则解析为 cyber_conf.proto -->
         <process_name>common</process_name>
+
+        <!-- <sched_name> CYBER_DEFAULT/xxx(目前未用) </sched_name> -->
+        <!-- <type> binary/library </type> -->
+        <!-- <exception_handler> handler </exception_handler> -->
     </module>
 </cyber>

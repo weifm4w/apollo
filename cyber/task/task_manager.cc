@@ -19,6 +19,7 @@
 #include "cyber/common/global_data.h"
 #include "cyber/croutine/croutine.h"
 #include "cyber/croutine/routine_factory.h"
+#include "cyber/scheduler/common/pin_thread.h"
 #include "cyber/scheduler/scheduler_factory.h"
 
 namespace apollo {
@@ -38,6 +39,9 @@ TaskManager::TaskManager()
 
   // mark: 线程处理模板, 循环处理 Enqueue 的任务, 任务是协程化
   auto func = [this]() {
+    auto tname = "task_manager_" + std::to_striing(__COUNTER__);
+    AFLOW << "add task: " << tname;
+    SetThisThreadName(tname);
     while (!stop_) {
       std::function<void()> task;
       if (!task_queue_->Dequeue(&task)) {
