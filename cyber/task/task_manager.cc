@@ -41,7 +41,7 @@ TaskManager::TaskManager()
   auto func = [this]() {
     auto tname = "T:task_mng_" + std::to_string(__COUNTER__);
     FLOW2MSG(tname);
-    SetThisThreadName(tname);
+    SET_THIS_THREAD_NAME(tname);
     while (!stop_) {
       std::function<void()> task;
       if (!task_queue_->Dequeue(&task)) {
