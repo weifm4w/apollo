@@ -58,12 +58,12 @@ class ListenerHandlerBase {
 template <typename MessageT>
 class ListenerHandler : public ListenerHandlerBase {
  public:
-  using Message = std::shared_ptr<MessageT>;
-  using MessageSignal = base::Signal<const Message&, const MessageInfo&>;
+  using MessagePtr = std::shared_ptr<MessageT>;
+  using MessageSignal = base::Signal<const MessagePtr&, const MessageInfo&>;
 
-  using Listener = std::function<void(const Message&, const MessageInfo&)>;
+  using Listener = std::function<void(const MessagePtr&, const MessageInfo&)>;
   using MessageConnection =
-      base::Connection<const Message&, const MessageInfo&>;
+      base::Connection<const MessagePtr&, const MessageInfo&>;
   using ConnectionMap = std::unordered_map<uint64_t, MessageConnection>;
 
   ListenerHandler() {}
@@ -75,7 +75,7 @@ class ListenerHandler : public ListenerHandlerBase {
   void Disconnect(uint64_t self_id) override;
   void Disconnect(uint64_t self_id, uint64_t oppo_id) override;
 
-  void Run(const Message& msg, const MessageInfo& msg_info);
+  void Run(const MessagePtr& msg, const MessageInfo& msg_info);
   void RunFromString(const std::string& str,
                      const MessageInfo& msg_info) override;
 
@@ -159,7 +159,7 @@ void ListenerHandler<MessageT>::Disconnect(uint64_t self_id, uint64_t oppo_id) {
 }
 
 template <typename MessageT>
-void ListenerHandler<MessageT>::Run(const Message& msg,
+void ListenerHandler<MessageT>::Run(const MessagePtr& msg,
                                     const MessageInfo& msg_info) {
   signal_(msg, msg_info);
   uint64_t oppo_id = msg_info.sender_id().HashValue();

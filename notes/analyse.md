@@ -206,3 +206,14 @@ File: cyber\proto\choreography_conf.proto
 22:   repeated ChoreographyTask tasks = 11;
 23: }
 ```
+
+### shm
+写端：
+writer —> Segment::AcquireBlockToWrite —> notifier::Notify
+
+读端：
+ShmDispatcher::ThreadFunc —> notifier::Listen —> Segment::AcquireBlockToRead —> ListenerHandler::Run —> (*signals_[oppo_id])(msg, msg_info) —> DataDispatcher —> DataVisitor::buffer —> DataNotifier::Instance()::Notify —> callback —> Scheduler::NotifyProcessor —> 执行协程 —> 从 DataVisitor::buffer 取出数据 —> 放入reader的blocker —> 执行用户传入的回调(如果有)
+
+### 消息传递顶层流程
+Reader如何从Writer方读取到数据的整个上层数据流
+Reader::Init() -> ReceiverManager<MessageT>::GetReceiver() -> transport::Transport::Instance()->CreateReceiver<MessageT>() 创建消息回调 —> DataDispatcher —> DataVisitor::buffer —> DataNotifier::Instance()::Notify —> callback —> Scheduler::NotifyProcessor —> 执行协程 —> 从DataVisitor::buffer拿出数据 —> 放入reader的blocker —>执行用户传入的回调(如果有)
