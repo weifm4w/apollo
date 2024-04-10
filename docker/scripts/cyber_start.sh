@@ -353,9 +353,20 @@ function start_cyber_container() {
 }
 
 function main() {
+
     check_agreement
 
     parse_arguments "$@"
+
+    instance=`docker ps -a -q -f name=${CYBER_CONTAINER}`
+    if [[ ${instance} != '' ]]; then
+        info "Already existing Apollo container: ${CYBER_CONTAINER} (ID: ${instance})"
+        ok "To log into the newly created CyberRT container, please run the following command:"
+        ok "  bash docker/scripts/cyber_into.sh"
+        ok "Enjoy!"
+        exit 0
+    fi
+
     determine_target_version_and_arch "${CUSTOM_VERSION}"
 
     check_multi_arch_support
