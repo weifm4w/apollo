@@ -35,6 +35,7 @@ namespace croutine {
 using RoutineFunc = std::function<void()>;
 using Duration = std::chrono::microseconds;
 
+// mark: READY 标记的是协程就绪可被调度执行,不是正在运行,下面状态缺少 RUNNING
 enum class RoutineState { READY, FINISHED, SLEEP, IO_WAIT, DATA_WAIT };
 
 class CRoutine {

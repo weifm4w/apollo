@@ -22,7 +22,7 @@ message SchedGroup {
   //       SCHED_OTHER(分时调度策略, 为默认策略)
   optional string processor_policy = 5;
   /* mark: 1.如果 processor_policy 设置为 SCHED_FIFO/SCHED_RR,
-             processor_prio取值为(1-99), 值越大, 表明优先级越高, 抢到cpu概率越大。
+             processor_prio 取值为(1-99), 值越大, 表明优先级越高, 抢到cpu概率越大。
            2.如果 processor_policy 设置为 SCHED_OTHER,
              processor_prio 取值为（-20-19, 0为默认值）, 这里为 nice 值,
              nice 值不影响分配到cpu的优先级, 但是影响分到cpu时间片的大小,
