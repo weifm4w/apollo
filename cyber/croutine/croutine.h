@@ -110,7 +110,7 @@ class CRoutine {
 
   // mark:协程锁,Acquire()获取锁资源,Release()释放锁资源,协程被Acquire()之后再次被Acquire()会失败
   std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
-  std::atomic_flag updated_ = ATOMIC_FLAG_INIT;  // mark:数据更新标识
+  std::atomic_flag updated_ = ATOMIC_FLAG_INIT;  // mark:数据更新标识{set:协程ready就绪可运行;clear:有数据则SetUpdateFlag通知}
 
   bool force_stop_ = false;
 
@@ -130,7 +130,7 @@ class CRoutine {
 // Yield()负责把当前寄存器中的信息即协程执行上下文保存至context_中，然后把main_stack_中线程主体的上下文恢复到寄存器中，将控制权返回给主体调度线程
 inline void CRoutine::Yield(const RoutineState &state) {
   auto routine = GetCurrentRoutine();
-  routine->set_state(state);
+  routine->set_state(state); // mark: 因为设置的是当前线程(每线程变量)的协程,所有不需要同步操作
   SwapContext(routine->GetStack(), GetMainStack());
 }
 
@@ -189,7 +189,7 @@ inline RoutineState CRoutine::UpdateState() {
   }
 
   // Asynchronous Event Mechanism
-  // mark: SetUpdateFlag()中clear(),说明有数据更新,state_:置为:READY
+  // mark: SetUpdateFlag()中clear(),说明有数据更新,state_:置为:READY;在 Processor::Run 调用 NextRoutine 获取到本croutine
   if (!updated_.test_and_set(std::memory_order_release)) {
     if (state_ == RoutineState::DATA_WAIT || state_ == RoutineState::IO_WAIT) {
       state_ = RoutineState::READY;

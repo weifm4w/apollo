@@ -277,6 +277,7 @@ bool Reader<MessageT>::Init() {
   croutine::RoutineFactory factory =
       croutine::CreateRoutineFactory<MessageT>(std::move(func), dv);
   AFLOW << "CreateTask: " << croutine_name_;
+  // mark: 创建协程
   if (!sched->CreateTask(factory, croutine_name_)) {
     AERROR << "Create Task Failed!";
     init_.store(false);

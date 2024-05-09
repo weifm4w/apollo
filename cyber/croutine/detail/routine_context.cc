@@ -22,24 +22,29 @@ namespace croutine {
 
 //  The stack layout looks as follows:
 //
-//              +------------------+
-//              |      Reserved    |
-//              +------------------+
-//              |  Return Address  |   f1 -> void CRoutineEntry(void *arg)
-//              +------------------+
-//              |        RDI       |   arg: this -> CRoutine obj
-//              +------------------+
-//              |        R12       |
-//              +------------------+
-//              |        R13       |
-//              +------------------+
-//              |        ...       |
-//              +------------------+
-// ctx->sp  =>  |        RBP       |
-//              +------------------+
+//                ^  +------------------+  addr大
+//                |  |      Reserved    |  协程栈顶,Reserved一个空间,避免踩内存?
+//                |  +------------------+
+//                |  |  Return Address  |   f1 -> void CRoutineEntry(void *arg)
+//                |  +------------------+
+//                |  |        RDI       |   arg: this -> CRoutine obj
+//                |  +------------------+
+//                /  |        R12       |
+// STACK_SIZE <---   +------------------+
+//                \  |        R13       |
+//                |  +------------------+
+//                |  |        ...       |
+//                |  +------------------+
+// ctx->sp  =>    |  |        RBP       |  协程栈底
+//                |  +------------------+
+//                |  |        ...       |
+//                |  +------------------+
+// ctx->stack=>   |  |                  |  RoutineContext起始地址
+//                V  +------------------+  addr小
 // mark: 把函数地址 f1 和函数参数 arg 保存到协程上下文 ctx
 //       https://blog.csdn.net/jinzhuojun/article/details/86760743
 void MakeContext(const func &f1, const void *arg, RoutineContext *ctx) {
+  // mark: 只利用了预分配的2M内存的栈顶一部分内存
   ctx->sp = ctx->stack + STACK_SIZE - 2 * sizeof(void *) - REGISTERS_SIZE;
   std::memset(ctx->sp, 0, REGISTERS_SIZE);
 #ifdef __aarch64__

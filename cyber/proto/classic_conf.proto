@@ -5,7 +5,7 @@ package apollo.cyber.proto;
 message ClassicTask {
   optional string name = 1;
   optional uint32 prio = 2 [default = 1]; // 值越大, 表明优先级越高
-  optional string group_name = 3;
+  optional string group_name = 3; // numa group
 }
 
 message SchedGroup {

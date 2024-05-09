@@ -149,6 +149,7 @@ RoutineFactory CreateRoutineFactory(
 template <typename Function>
 RoutineFactory CreateRoutineFactory(Function&& f) {
   RoutineFactory factory;
+  // mark: 协程工厂函数, create_routine 是 function, create_routine()返回用户回调函数
   factory.create_routine = [f = std::forward<Function&&>(f)]() { return f; };
   return factory;
 }

@@ -64,7 +64,7 @@ std::shared_ptr<CRoutine> ClassicContext::NextRoutine() {
         continue;
       }
 
-      // mark: 返回 READY 待运行状态的协程
+      // mark: 返回 READY 待运行状态的协程, 注意:上面已经 Acquire, 在返回处理完后要 Release
       if (cr->UpdateState() == RoutineState::READY) {
         return cr;
       }

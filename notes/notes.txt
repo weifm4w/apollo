@@ -1,0 +1,52 @@
+
+sudo apt update
+sudo apt install -y libgflags-dev libgoogle-glog-dev
+# 编译带调试信息
+./apollo.sh build cyber --config=dbg
+# 情况所有
+./apollo.sh clean --all
+==================================
+sudo apt install -y sysstat
+----------------------------------
+pidstat --human -hur -p 115163,115155 2
+pidstat --human -hur -p `pgrep talker`,`pgrep listener` 2
+==================================
+docker hub
+https://hub.docker.com/r/apolloauto/apollo/tags
+----------------------------------
+# 默认版本
+cyber-x86_64-18.04-20210315_1535
+# aarch64版本
+cyber-aarch64-18.04-20201217_1302
+# 最新aarch64版本
+dev-aarch64-20.04-20240409_1154
+----------------------------------
+./docker/scripts/cyber_start.sh -h
+Usage: ./docker/scripts/cyber_start.sh [options] ...
+OPTIONS:
+    -g <us|cn>             Pull docker image from mirror registry based on geolocation.
+    -h, --help             Display this help and exit.
+    -t, --tag <TAG>        Specify docker image with tag to start
+    -d, --dist             Specify Apollo distribution(stable/testing)
+    -l, --local            Use local docker image.
+    -m <arch>              Specify docker image for a different CPU arch.
+    --shm-size <bytes>     Size of /dev/shm . Passed directly to "docker run"
+    stop [-f|--force]      Stop all running Apollo containers. Use "-f" to force removal.
+==================================
+
+==================================
+
+==================================
+
+==================================
+
+==================================
+
+==================================
+
+==================================
+
+==================================
+
+
+

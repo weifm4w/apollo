@@ -40,6 +40,7 @@ Processor::Processor() { running_.store(true); }
 
 Processor::~Processor() { Stop(); }
 
+// mark: 每处理器线程
 void Processor::Run() {
   auto tname = std::string("processor_") + std::to_string(t_numb_++);
   SET_THIS_THREAD_NAME(tname);

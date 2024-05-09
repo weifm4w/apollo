@@ -43,18 +43,25 @@ static constexpr uint32_t MAX_PRIO = 20;
 // mark: 管理 CRoutine 上下文, 根据 CRoutine 的 group_name 和 priority 设计
 //       CroutineContextManager 命名更贴切
 //       一个 group_name 对应一个线程和协程池
+
+// mark: 每个 priority 优先级课可能有多个协程
 using CroutineQueue = std::vector<std::shared_ptr<CRoutine>>;  // mark:协程数组
 using PriorityCroutineQueue = std::array<CroutineQueue, MAX_PRIO>; // mark:数组下标代表priority
-// mark:不同用途的协程组,key:group_name
+
+// mark: 不同用途的协程组,<group_name, PriorityCroutineQueue>
 using CroutinesGroup = std::unordered_map<std::string, PriorityCroutineQueue>;
-using LockQueue = std::array<base::AtomicRWLock, MAX_PRIO>;
+
+using LockQueue = std::array<base::AtomicRWLock, MAX_PRIO>; // mark:数组下标代表priority
+// mark: 不同用途的协程组的锁,<group_name, PriorityCroutineQueue>
 using LockQueueGroup = std::unordered_map<std::string, LockQueue>;
 
+// mark: <group_name, xxx>
 using CvGroup = std::unordered_map<std::string, CvWrapper>;
 using MutexGroup = std::unordered_map<std::string, MutexWrapper>;
-using NotifyGroup = std::unordered_map<std::string, int>;  // mark:int:counter,Notify()时计数器+1,Wait()唤醒时计数器-1
+using NotifyGroup = std::unordered_map<std::string, int>;  // mark: int类型counter, Notify()时计数器+1, Wait()唤醒时计数器-1
 // clang-format on
 
+// mark: 经典模式的每处理器线程的上下文
 class ClassicContext : public ProcessorContext {
  public:
   ClassicContext();
@@ -67,7 +74,7 @@ class ClassicContext : public ProcessorContext {
   static void Notify(const std::string &group_name);
   static bool RemoveCRoutine(const std::shared_ptr<CRoutine> &cr);
 
-  // MARK: 关键管理 croutines_group_
+  // MARK: 都是static全局数据,每处理器线程访问需要保护
   alignas(CACHELINE_SIZE) static CroutinesGroup croutines_group_;
   alignas(CACHELINE_SIZE) static LockQueueGroup locks_group_;
 
@@ -81,6 +88,7 @@ class ClassicContext : public ProcessorContext {
   std::chrono::steady_clock::time_point wake_time_;
   bool need_sleep_ = false;
 
+  // mark: 以下指针根据当前的 group_name 取数组的地址得到
   PriorityCroutineQueue *priority_croutines_ = nullptr;
   LockQueue *lock_queue_ = nullptr;  // mark: 保护 priority_croutines_
 

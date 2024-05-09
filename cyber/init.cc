@@ -102,8 +102,9 @@ bool Init(const char* binary_name) {
 
   InitLogger(binary_name);
   auto thread = const_cast<std::thread*>(async_logger->LogThread());
-  // mark: Instance 已经根据配置创建好线程并设置调度策略
-  scheduler::Instance()->SetInnerThreadAttr("async_log", thread);
+
+  // MARK: Instance 过程已经解析配置文件+创建线程+设置调度策略
+  scheduler::Instance()->set_inner_thread_attr("async_log", thread);
 
   SysMo::Instance();
 
@@ -122,6 +123,7 @@ bool Init(const char* binary_name) {
   // mark:Instance 已完成 cyber_conf.proto 参数解析
   auto global_data = GlobalData::Instance();
   if (global_data->IsMockTimeMode()) {
+    // mark: 如果是仿真模式,订阅/clock消息来更新仿真时间
     auto node_name = kClockNode + std::to_string(getpid());
     clock_node = std::unique_ptr<Node>(new Node(node_name));
     auto cb =

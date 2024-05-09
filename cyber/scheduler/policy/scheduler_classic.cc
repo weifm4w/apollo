@@ -41,7 +41,7 @@ using apollo::cyber::croutine::RoutineState;
 SchedulerClassic::SchedulerClassic() {
   FLOW2();
   std::string conf("conf/");
-  // mark:通过 -p, --process_group 指定的配置文件
+  // mark:通过 -p, --process_group 指定的配置文件, 未指定时, 由于pid不同, cfg_file文件不存在
   conf.append(GlobalData::Instance()->ProcessGroup()).append(".conf");
   auto cfg_file = GetAbsolutePath(WorkRoot(), conf);
 
@@ -77,6 +77,7 @@ SchedulerClassic::SchedulerClassic() {
     }
     task_pool_size_ = proc_num;
 
+    // mark: 默认是单numa,只有一个group
     auto sched_group = classic_conf_.add_groups();
     sched_group->set_name(DEFAULT_GROUP_NAME);
     sched_group->set_processor_num(proc_num);
@@ -90,7 +91,7 @@ SchedulerClassic::SchedulerClassic() {
 
 void SchedulerClassic::CreateProcessor() {
   FLOW2();
-  // MARK: 1. groups 有多个调度组
+  // MARK: 1. 多个group对应多个numa节点, 跨numa节点会给系统带来额外的开销
   for (auto& group : classic_conf_.groups()) {
     auto& group_name = group.name();
     auto proc_num = group.processor_num();
@@ -104,7 +105,7 @@ void SchedulerClassic::CreateProcessor() {
     std::vector<int> cpuset;
     ParseCpuset(group.cpuset(), &cpuset);
 
-    // MARK: 2. 一个调度组内有多个线程,一个线程管理一个协程组 ProcessorContext
+    // MARK: 2. proc_num是核数(线程数),一个线程对应一个处理器上下文(协程组) ProcessorContext
     for (uint32_t i = 0; i < proc_num; i++) {
       // 协程组管理上下文, 根据 CRoutine 的 group_name 和 priority 设计
       auto ctx = std::make_shared<ClassicContext>(group_name);
@@ -148,6 +149,7 @@ bool SchedulerClassic::DispatchTask(const std::shared_ptr<CRoutine>& cr) {
     id_cr_map_[cr->id()] = cr;
   }
 
+  // mark: 设置协程优先级和numa组
   if (cr_confs_.find(cr->name()) != cr_confs_.end()) {
     ClassicTask task = cr_confs_[cr->name()];
     cr->set_priority(task.prio());
