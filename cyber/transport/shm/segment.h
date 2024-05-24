@@ -62,11 +62,11 @@ class Segment {
   ShmConf conf_;
   uint64_t channel_id_;
 
-  State* state_;
-  Block* blocks_;
+  State* state_; // mark: 一个对象
+  Block* blocks_; // mark: 数组Block[Num]
   void* managed_shm_;
   std::mutex block_buf_lock_;
-  std::unordered_map<uint32_t, uint8_t*> block_buf_addrs_;
+  std::unordered_map<uint32_t, uint8_t*> block_buf_addrs_; // mark: 为什么不用数组？ <index, buf_addr>
 
  private:
   bool Remap();

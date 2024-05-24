@@ -40,21 +40,27 @@ const uint64_t ShmConf::STATE_SIZE = 1024;
 const uint64_t ShmConf::BLOCK_SIZE = 1024;
 const uint64_t ShmConf::MESSAGE_INFO_SIZE = 1024;
 
+// mark: 16K: 512 * (1024 * 16) / (1024*1024) = 8M
 const uint32_t ShmConf::BLOCK_NUM_16K = 512;
 const uint64_t ShmConf::MESSAGE_SIZE_16K = 1024 * 16;
 
+// mark: 128K: 128 * (1024 * 128) / (1024*1024) = 16M
 const uint32_t ShmConf::BLOCK_NUM_128K = 128;
 const uint64_t ShmConf::MESSAGE_SIZE_128K = 1024 * 128;
 
+// mark: 1M: 64 * (1024 * 1024) / (1024*1024) = 64M
 const uint32_t ShmConf::BLOCK_NUM_1M = 64;
 const uint64_t ShmConf::MESSAGE_SIZE_1M = 1024 * 1024;
 
+// mark: 8M: 32 * (1024 * 1024 * 8) / (1024*1024) = 256M
 const uint32_t ShmConf::BLOCK_NUM_8M = 32;
 const uint64_t ShmConf::MESSAGE_SIZE_8M = 1024 * 1024 * 8;
 
+// mark: 16M: 16 * (1024 * 1024 * 16) / (1024*1024) = 256M
 const uint32_t ShmConf::BLOCK_NUM_16M = 16;
 const uint64_t ShmConf::MESSAGE_SIZE_16M = 1024 * 1024 * 16;
 
+// mark: 16M+: 8 * (1024 * 1024 * 32) / (1024*1024) = 256M
 const uint32_t ShmConf::BLOCK_NUM_MORE = 8;
 const uint64_t ShmConf::MESSAGE_SIZE_MORE = 1024 * 1024 * 32;
 
