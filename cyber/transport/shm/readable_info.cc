@@ -24,6 +24,12 @@ namespace apollo {
 namespace cyber {
 namespace transport {
 
+/*mark:
+  ReadableInfo 数据成员大小
+  uint64_t host_id_;
+  uint32_t block_index_;
+  uint64_t channel_id_;
+*/
 const size_t ReadableInfo::kSize = sizeof(uint64_t) * 2 + sizeof(uint32_t);
 
 ReadableInfo::ReadableInfo() : host_id_(0), block_index_(0), channel_id_(0) {}

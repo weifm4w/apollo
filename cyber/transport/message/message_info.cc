@@ -24,6 +24,12 @@ namespace apollo {
 namespace cyber {
 namespace transport {
 
+/*mark:
+  只包含部分字段
+  Identity sender_id_ 取 ID_SIZE 大小,即 Identity 中的字段char data_[ID_SIZE];
+  uint64_t seq_num_
+  Identity spare_id_ 取 ID_SIZE 大小,即 Identity 中的字段char data_[ID_SIZE];
+*/
 const std::size_t MessageInfo::kSize = 2 * ID_SIZE + sizeof(uint64_t);
 
 MessageInfo::MessageInfo() : sender_id_(false), spare_id_(false) {}

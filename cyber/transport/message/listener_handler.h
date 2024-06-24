@@ -84,12 +84,12 @@ class ListenerHandler : public ListenerHandlerBase {
   using MessageSignalMap = std::unordered_map<uint64_t, SignalPtr>;
   // used for self_id
   MessageSignal signal_;
-  ConnectionMap signal_conns_;  // key: self_id
+  ConnectionMap signal_conns_;  // key: self_id mark: signal_conns_[self_id] = connection;
 
   // used for self_id and oppo_id
   MessageSignalMap signals_;  // key: oppo_id
   // key: oppo_id
-  std::unordered_map<uint64_t, ConnectionMap> signals_conns_;
+  std::unordered_map<uint64_t, ConnectionMap> signals_conns_; // mark: signals_conns_[oppo_id][self_id] = connection;
 
   base::AtomicRWLock rw_lock_;
 };

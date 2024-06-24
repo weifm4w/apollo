@@ -27,6 +27,7 @@ namespace transport {
 Identity::Identity(bool need_generate) : hash_value_(0) {
   std::memset(data_, 0, ID_SIZE);
   if (need_generate) {
+    // mark: typedef unsigned char uuid_t[16]; 但是 constexpr uint8_t ID_SIZE = 8;
     uuid_t uuid;
     uuid_generate(uuid);
     std::memcpy(data_, uuid, ID_SIZE);
