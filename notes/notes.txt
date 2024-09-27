@@ -1,9 +1,16 @@
-
+# 启动docker
+./docker/scripts/cyber_start.sh
+# 进入docker
+./docker/scripts/cyber_into.sh
+-------------
 sudo apt update
 sudo apt install -y libgflags-dev libgoogle-glog-dev
+-------------
+# 编译cyber
+./apollo.sh build cyber
 # 编译带调试信息
 ./apollo.sh build cyber --config=dbg
-# 情况所有
+# 清理所有
 ./apollo.sh clean --all
 ==================================
 sudo apt install -y sysstat
